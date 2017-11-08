@@ -1,6 +1,3 @@
-group 'com.kotcrab.fate'
-version = '1.0.0-SNAPSHOT'
-
 buildscript {
     ext.kotlinVersion = '1.1.51'
     repositories {
@@ -11,6 +8,11 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
+}
+
+subprojects {
+    group 'com.kotcrab.fate'
+    version = '1.0.0-SNAPSHOT'
 }
 
 allprojects {
