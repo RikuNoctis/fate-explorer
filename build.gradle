@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlinVersion = '1.1.51'
+    ext.kotlinVersion = '1.2.0'
     repositories {
         mavenCentral()
         jcenter()
@@ -34,7 +34,7 @@ project(':core') {
     dependencies {
         compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-        compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.16'
+        compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3'
         compile "com.kotcrab.kmips:kmips:1.0-SNAPSHOT"
         compile "com.github.czyzby:kotlin-times:1.0"
         compile "org.apache.commons:commons-exec:1.3"
