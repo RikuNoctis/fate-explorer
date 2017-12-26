@@ -1,5 +1,6 @@
 package com.kotcrab.fate
 
+import java.io.File
 import java.nio.charset.Charset
 
 /** @author Kotcrab */
@@ -54,3 +55,7 @@ val Charsets.WINDOWS_932: Charset
 
 val Charsets.SHIFT_JIS: Charset
     get() = shiftJisCharset
+
+fun File.child(name: String): File {
+    return File(this, name)
+}
