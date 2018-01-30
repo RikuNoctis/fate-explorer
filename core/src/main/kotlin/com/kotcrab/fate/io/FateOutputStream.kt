@@ -14,6 +14,10 @@ class FateOutputStream(private val outputStream: OutputStream, littleEndian: Boo
     private val stream: FilterOutputStream = if (littleEndian) LittleEndianDataOutputStream(counter) else DataOutputStream(counter)
     private val output: DataOutput = stream as DataOutput
 
+    fun writeByte(value: Byte) {
+        output.write(byteArrayOf(value))
+    }
+
     fun writeShort(value: Int) {
         output.writeShort(value)
     }
