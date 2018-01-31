@@ -77,6 +77,10 @@ class CpkFile(val file: File, private val log: Log = Log()) {
     }
 
     fun extractTo(outDir: File, ignoreNotEmptyOut: Boolean = false) {
+        extractSpecified(outDir, ignoreNotEmptyOut, null)
+    }
+
+    fun extractSpecified(outDir: File, ignoreNotEmptyOut: Boolean = false, paths: List<String>?) {
         if (ignoreNotEmptyOut == false && outDir.exists() && outDir.list().isNotEmpty()) log.fatal("outDir is not empty")
         outDir.mkdirs()
 
@@ -102,6 +106,11 @@ class CpkFile(val file: File, private val log: Log = Log()) {
                 val extractSize = queryUtf(input, fileTable, index, "ExtractSize") as Int
                 val fileOffset = queryUtf(input, fileTable, index, "FileOffset") as Long
                 val path = "$dirName/$fileName"
+                if (paths != null) {
+                    if (paths.contains(path) == false) {
+                        return@repeat
+                    }
+                }
                 val outFile = outDir.child(path)
                 outFile.parentFile.mkdirs()
                 outFile.createNewFile()
