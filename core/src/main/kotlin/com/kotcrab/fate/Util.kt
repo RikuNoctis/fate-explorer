@@ -1,6 +1,13 @@
 package com.kotcrab.fate
 
+import com.google.common.io.ByteStreams
+import com.google.common.reflect.TypeToken
+import com.google.gson.Gson
+import org.apache.commons.exec.CommandLine
+import org.apache.commons.exec.DefaultExecutor
+import org.apache.commons.exec.PumpStreamHandler
 import java.io.File
+import java.io.Reader
 import java.nio.charset.Charset
 
 /** @author Kotcrab */
@@ -59,3 +66,28 @@ val Charsets.SHIFT_JIS: Charset
 fun File.child(name: String): File {
     return File(this, name)
 }
+
+inline fun <reified T> Gson.fromJson(reader: Reader) = this.fromJson<T>(reader, object : TypeToken<T>() {}.type)
+
+inline fun <reified T> Gson.fromJson(json: String) = this.fromJson<T>(json, object : TypeToken<T>() {}.type)
+
+
+fun execute(executable: File, args: Array<Any>, workingDirectory: File? = null, exitValue: Int = 0,
+            streamHandler: PumpStreamHandler? = null) {
+    val cmdLine = CommandLine(executable.absolutePath)
+    args.forEachIndexed { index, _ ->
+        cmdLine.addArgument("\${arg$index}")
+    }
+    val map = mutableMapOf<String, Any>()
+    args.forEachIndexed { index, arg ->
+        map.put("arg$index", arg)
+    }
+    cmdLine.substitutionMap = map
+    val executor = DefaultExecutor()
+    if (workingDirectory != null) executor.workingDirectory = workingDirectory
+    if (streamHandler != null) executor.streamHandler = streamHandler
+    executor.setExitValue(exitValue)
+    executor.execute(cmdLine)
+}
+
+fun nullStreamHandler() = PumpStreamHandler(ByteStreams.nullOutputStream(), ByteStreams.nullOutputStream())
