@@ -5,6 +5,7 @@ import com.kotcrab.fate.child
 import com.kotcrab.fate.io.BitInputStream
 import com.kotcrab.fate.io.FateInputStream
 import com.kotcrab.fate.io.SeekableByteArrayOutputStream
+import com.kotcrab.fate.toHex
 import com.kotcrab.fate.toUnsignedInt
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -51,10 +52,11 @@ class CpkFile(val file: File, private val log: Log = Log()) {
         repeat(files) { index ->
             val dirName = queryUtf(input, fileTable, index, "DirName") as String
             val fileName = queryUtf(input, fileTable, index, "FileName") as String
+            val fileOffset = queryUtf(input, fileTable, index, "FileOffset") as Long
             val relPath = "$dirName/$fileName"
             if (patchedFiles.containsKey(relPath)) {
                 val newFile = patchedFiles[relPath]!!
-                log.info("Patching $relPath")
+                log.info("Patching $relPath at ${fileOffset.toHex()}")
                 raf.seek(raf.length())
                 raf.align(dataAlign)
                 val newFileOffset = raf.length() - tocOffset
@@ -112,6 +114,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
                     }
                 }
                 val outFile = outDir.child(path)
+                if(outFile.exists()) return@repeat
                 outFile.parentFile.mkdirs()
                 outFile.createNewFile()
 
