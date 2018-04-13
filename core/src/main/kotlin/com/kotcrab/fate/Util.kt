@@ -13,6 +13,7 @@ import java.nio.charset.Charset
 /** @author Kotcrab */
 
 fun Byte.toUnsignedInt() = (this.toInt() and 0xFF)
+fun Short.toUnsignedInt() = (this.toInt() and 0xFFFF)
 
 fun Byte.getBits(): BooleanArray {
     val bits = BooleanArray(8)
