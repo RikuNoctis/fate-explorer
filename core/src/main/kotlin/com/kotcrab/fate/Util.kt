@@ -3,6 +3,7 @@ package com.kotcrab.fate
 import com.google.common.io.ByteStreams
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import org.apache.commons.exec.CommandLine
 import org.apache.commons.exec.DefaultExecutor
 import org.apache.commons.exec.PumpStreamHandler
@@ -13,6 +14,7 @@ import java.nio.charset.Charset
 /** @author Kotcrab */
 
 fun Byte.toUnsignedInt() = (this.toInt() and 0xFF)
+
 fun Short.toUnsignedInt() = (this.toInt() and 0xFFFF)
 
 fun Byte.getBits(): BooleanArray {
@@ -68,10 +70,31 @@ fun File.child(name: String): File {
     return File(this, name)
 }
 
+val stdGson = createStdGson()
+
+fun createStdGson(prettyPrint: Boolean = true): Gson {
+    return if (prettyPrint) {
+        GsonBuilder().setPrettyPrinting().create()
+    } else {
+        GsonBuilder().create()
+    }
+}
+
 inline fun <reified T> Gson.fromJson(reader: Reader) = this.fromJson<T>(reader, object : TypeToken<T>() {}.type)
 
 inline fun <reified T> Gson.fromJson(json: String) = this.fromJson<T>(json, object : TypeToken<T>() {}.type)
 
+fun File.writeJson(src: Any) {
+    bufferedWriter().use { stdGson.toJson(src, it) }
+}
+
+fun File.writeJson(gson: Gson = stdGson, src: Any) {
+    bufferedWriter().use { gson.toJson(src, it) }
+}
+
+inline fun <reified T> File.readJson(gson: Gson = stdGson): T {
+    return bufferedReader().use { gson.fromJson(it) }
+}
 
 fun execute(executable: File, args: Array<Any>, workingDirectory: File? = null, exitValue: Int = 0,
             streamHandler: PumpStreamHandler? = null) {

@@ -34,7 +34,7 @@ class FateOutputStream(private val outputStream: OutputStream, littleEndian: Boo
         output.writeFloat(value)
     }
 
-    fun writeZeroTerminatedString(string: String, charset: Charset = Charsets.WINDOWS_932) {
+    fun writeNullTerminatedString(string: String, charset: Charset = Charsets.WINDOWS_932) {
         output.write(string.toByteArray(charset))
         output.writeByte(0)
     }
