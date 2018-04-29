@@ -63,6 +63,8 @@ private val shiftJisCharset = Charset.forName("Shift_JIS")
 val Charsets.WINDOWS_932: Charset
     get() = windows932Charset
 
+@Deprecated(level = DeprecationLevel.WARNING, message = "Prefer using Charsets.WINDOWS_932 to properly support IBM code page 932",
+        replaceWith = ReplaceWith("Charsets.WINDOWS_932", "com.kotcrab.fate.WINDOWS_932"))
 val Charsets.SHIFT_JIS: Charset
     get() = shiftJisCharset
 
