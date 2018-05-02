@@ -41,5 +41,5 @@ project(':core') {
     }
 }
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.3'
+    gradleVersion = '4.7'
 }
