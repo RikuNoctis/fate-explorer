@@ -4,31 +4,31 @@ import com.kotcrab.fate.toUnsignedInt
 import java.io.ByteArrayOutputStream
 
 /** @author Kotcrab */
-class SeekableByteArrayOutputStream : ByteArrayOutputStream {
+class FastByteArrayOutputStream : ByteArrayOutputStream {
     constructor() : super()
     constructor(size: Int) : super(size)
 
-    fun seek(pos: Int) {
-        count = pos
-    }
-
+    @Synchronized
     fun write(byte: Byte) {
         super.write(byte.toUnsignedInt())
     }
 
+    @Synchronized
     fun at(pos: Int): Byte {
         return buf[pos]
     }
 
+    @Synchronized
     fun count(): Int {
         return super.count
     }
 
-    @Synchronized override fun toByteArray(): ByteArray {
+    @Synchronized
+    override fun toByteArray(): ByteArray {
         return if (count == buf.size) buf else super.toByteArray()
     }
 
-    fun getBuf(): ByteArray {
+    fun getInternalBuf(): ByteArray {
         return buf
     }
 }

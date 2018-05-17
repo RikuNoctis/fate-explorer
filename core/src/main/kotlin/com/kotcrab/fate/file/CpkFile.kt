@@ -3,8 +3,8 @@ package com.kotcrab.fate.file
 import com.kotcrab.fate.Log
 import com.kotcrab.fate.child
 import com.kotcrab.fate.io.BitInputStream
+import com.kotcrab.fate.io.FastByteArrayOutputStream
 import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.io.SeekableByteArrayOutputStream
 import com.kotcrab.fate.toHex
 import com.kotcrab.fate.toUnsignedInt
 import java.io.ByteArrayOutputStream
@@ -150,7 +150,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
 
         dataComp.reverse()
 
-        val out = SeekableByteArrayOutputStream(sizeOrig)
+        val out = FastByteArrayOutputStream(sizeOrig)
 
         with(BitInputStream(dataComp)) {
             while (out.size() < sizeOrig) {
