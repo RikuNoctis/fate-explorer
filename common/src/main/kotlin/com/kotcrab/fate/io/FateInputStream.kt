@@ -2,9 +2,9 @@ package com.kotcrab.fate.io
 
 import com.google.common.io.CountingInputStream
 import com.google.common.io.LittleEndianDataInputStream
-import com.kotcrab.fate.WINDOWS_932
-import com.kotcrab.fate.toHex
-import com.kotcrab.fate.toUnsignedInt
+import com.kotcrab.fate.util.WINDOWS_932
+import com.kotcrab.fate.util.toHex
+import com.kotcrab.fate.util.toUnsignedInt
 import java.io.*
 import java.nio.charset.Charset
 

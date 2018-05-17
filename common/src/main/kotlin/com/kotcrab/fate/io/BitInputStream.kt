@@ -1,7 +1,7 @@
 package com.kotcrab.fate.io
 
-import com.kotcrab.fate.isBitSet
-import com.kotcrab.fate.toInt
+import com.kotcrab.fate.util.isBitSet
+import com.kotcrab.fate.util.toInt
 
 /** @author Kotcrab */
 class BitInputStream(private val bytes: ByteArray, private val msbOrder: Boolean = true) {

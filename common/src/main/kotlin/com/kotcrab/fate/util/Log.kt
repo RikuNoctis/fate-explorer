@@ -1,4 +1,4 @@
-package com.kotcrab.fate
+package com.kotcrab.fate.util
 
 /** @author Kotcrab */
 open class Log {

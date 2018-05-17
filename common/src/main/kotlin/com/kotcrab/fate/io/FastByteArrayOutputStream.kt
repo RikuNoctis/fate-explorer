@@ -1,6 +1,6 @@
 package com.kotcrab.fate.io
 
-import com.kotcrab.fate.toUnsignedInt
+import com.kotcrab.fate.util.toUnsignedInt
 import java.io.ByteArrayOutputStream
 
 /** @author Kotcrab */

@@ -1,12 +1,12 @@
 package com.kotcrab.fate.file
 
-import com.kotcrab.fate.Log
-import com.kotcrab.fate.child
 import com.kotcrab.fate.io.BitInputStream
 import com.kotcrab.fate.io.FastByteArrayOutputStream
 import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.toHex
-import com.kotcrab.fate.toUnsignedInt
+import com.kotcrab.fate.util.Log
+import com.kotcrab.fate.util.child
+import com.kotcrab.fate.util.toHex
+import com.kotcrab.fate.util.toUnsignedInt
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.RandomAccessFile
@@ -114,7 +114,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
                     }
                 }
                 val outFile = outDir.child(path)
-                if(outFile.exists()) return@repeat
+                if (outFile.exists()) return@repeat
                 outFile.parentFile.mkdirs()
                 outFile.createNewFile()
 

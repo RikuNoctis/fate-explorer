@@ -2,7 +2,7 @@ package com.kotcrab.fate.io
 
 import com.google.common.io.CountingOutputStream
 import com.google.common.io.LittleEndianDataOutputStream
-import com.kotcrab.fate.WINDOWS_932
+import com.kotcrab.fate.util.WINDOWS_932
 import java.io.*
 import java.nio.charset.Charset
 
