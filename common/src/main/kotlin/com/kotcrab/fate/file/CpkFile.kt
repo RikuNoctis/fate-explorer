@@ -16,7 +16,7 @@ import kotlin.coroutines.experimental.buildSequence
  * .CPK unpacker and CRILAYLA decompressor.
  * Unpacking ported from QuickBMS's CPK.BMS v22 (newer were crashing QuickBMS)
  * Decompressor ported from arc_unpacker.
- * Includes experimental in place patcher by me.
+ * Includes experimental in-place patcher by me.
  * @author Kotcrab
  * */
 class CpkFile(val file: File, private val log: Log = Log()) {
@@ -40,7 +40,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
         const val COLUMN_TYPE_1BYTE = 0x00
     }
 
-    fun patchInPlace(patchedFiles: Map<String, File>, dataAlign: Long = 2048) {
+    fun patchInPlace(patchedFiles: Map<String, File>, dataAlign: Long = 2048, insertNewFilesAt: Long = -1) {
         val input = FateInputStream(file, littleEndian = false)
         val raf = RandomAccessFile(file, "rw")
 
@@ -49,6 +49,8 @@ class CpkFile(val file: File, private val log: Log = Log()) {
         val files = queryUtf(input, tocTable, 0, "Files") as Int
         val fileTable = createUtfTable(input, tocOffset)
 
+        var placeNextFileAt = insertNewFilesAt
+        if (placeNextFileAt == -1L) placeNextFileAt = raf.length()
         repeat(files) { index ->
             val dirName = queryUtf(input, fileTable, index, "DirName") as String
             val fileName = queryUtf(input, fileTable, index, "FileName") as String
@@ -57,10 +59,11 @@ class CpkFile(val file: File, private val log: Log = Log()) {
             if (patchedFiles.containsKey(relPath)) {
                 val newFile = patchedFiles[relPath]!!
                 log.info("Patching $relPath at ${fileOffset.toHex()}")
-                raf.seek(raf.length())
+                raf.seek(placeNextFileAt)
                 raf.align(dataAlign)
-                val newFileOffset = raf.length() - tocOffset
+                val newFileOffset = raf.filePointer - tocOffset
                 raf.write(newFile.readBytes())
+                placeNextFileAt = raf.filePointer
                 arrayOf("FileSize", "ExtractSize").forEach { columnName ->
                     patchUtf(input, fileTable, index, columnName, { offset ->
                         raf.seek(offset)
