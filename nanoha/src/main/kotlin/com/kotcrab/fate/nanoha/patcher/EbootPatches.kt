@@ -1,6 +1,7 @@
 package com.kotcrab.fate.nanoha.patcher
 
 import com.kotcrab.fate.util.*
+import kmips.FpuReg.*
 import kmips.Label
 import kmips.Reg.*
 import kmips.assembleAsHexString
@@ -40,9 +41,9 @@ class EbootPatches {
             addu(t7, t7, t8)
             addu(t7, t0, t7)
             lhu(t7, 0x0, t7) //load xadvance and store into f13
-            data(0x448F6000) //mtc1     t7,f12
-            data(0x46806320) //cvt.s.w	  f12,f12
-            data(0x460C7B40) //add.s	  f13,f15,f12
+            mtc1(t7, f12)
+            cvt.s.w(f12, f12)
+            add.s(f13, f15, f12)
 
             //apply kerning pair data
             val kerningLoop = Label()
@@ -88,9 +89,9 @@ class EbootPatches {
             label(applyKerning)
             addi(s0, s0, 0x1)
             lb(s2, 0, s0)
-            data(0x44926000) //mtc1     s2,f12
-            data(0x46806320) //cvt.s.w	  f12,f12
-            data(0x460C6B40) //add.s	  f13,f13,f12
+            mtc1(s2, f12)
+            cvt.s.w(f12, f12)
+            add.s(f13, f13, f12)
             nop()
 
             label(afterKerningLoop)
@@ -100,8 +101,8 @@ class EbootPatches {
             lw(t7, 0x74, a0) //load offset into width data
             addu(t7, t0, t7) //get address for current character
             lhu(t0, 0x0, t7) //load character width and store into f12
-            data(0x44886000) //mtc1     t0,f12
-            data(0x46806320) //cvt.s.w	  f12,f12
+            mtc1(t0, f12)
+            cvt.s.w(f12, f12)
 
             ctx.restore()
             j(0x088F6D7C)
@@ -110,8 +111,8 @@ class EbootPatches {
 
         run {
             funcs.applyXoffset = virtualPc
-            data(0xC4AC001C.toInt())   //lwc1	f12,0x1C(a1)
-            data(0x460C7300)     //add.s	f12,f14,f12
+            lwc1(f12, 0x1C, a1)
+            add.s(f12, f14, f12)
 
             val ctx = preserve(arrayOf(t0, t1, t8))
             lui(t8, vars.ptrCurrentChar.highBits())
@@ -126,9 +127,9 @@ class EbootPatches {
             addu(t0, t0, t1)
             addu(t0, t0, t8)
             lb(t0, 0x0, t0) //load xoffset and store into f13
-            data(0x44887000) //mtc1     t0,f14
-            data(0x468073A0) //cvt.s.w	  f14,f14
-            data(0x460E6300) //add.s	  f12,f12,f14
+            mtc1(t0, f14)
+            cvt.s.w(f14, f14)
+            add.s(f12, f12, f14)
 
             ctx.restore()
             j(0x088F6F38)
