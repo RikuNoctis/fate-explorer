@@ -183,7 +183,7 @@ inline fun <reified T> File.readJson(gson: Gson = stdGson): T {
     return bufferedReader().use { gson.fromJson(it) }
 }
 
-fun execute(executable: File, args: Array<Any>, workingDirectory: File? = null, exitValue: Int = 0,
+fun execute(executable: File, args: Array<Any> = arrayOf(), workingDirectory: File? = null, exitValue: Int = 0,
             streamHandler: PumpStreamHandler? = null) {
     val cmdLine = CommandLine(executable.absolutePath)
     args.forEachIndexed { index, _ ->
