@@ -41,7 +41,7 @@ project(':common') {
         compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
         compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.21.2"
-        compile "com.kotcrab.kmips:kmips:1.1"
+        compile "com.kotcrab.kmips:kmips:1.2"
         compile "com.google.guava:guava:19.0"
         compile "com.google.code.gson:gson:2.8.0"
         compile "org.apache.commons:commons-exec:1.3"
