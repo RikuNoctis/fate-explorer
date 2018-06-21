@@ -172,7 +172,7 @@ class GearsPatcher {
             ArrayList()
         }
         val copiedFiles = mutableListOf<String>()
-        walkDir(customIsoFilesDir, { file ->
+        walkDir(customIsoFilesDir, processFile = { file ->
             val relPath = file.relativizePath(customIsoFilesDir)
             println("Copying $relPath")
             copiedFiles.add(relPath)
@@ -325,7 +325,7 @@ class GearsPatcher {
         println("--- Creating xdelta patches ---")
 
         val xdeltaCmds = StringBuilder()
-        walkDir(isoBuildDir, { file ->
+        walkDir(isoBuildDir, processFile = { file ->
             val relPath = file.relativizePath(isoBuildDir)
             if (relPath.startsWith("PSP_GAME/USRDIR/sound")) return@walkDir
             val stockFile = isoSrcDir.child(relPath)

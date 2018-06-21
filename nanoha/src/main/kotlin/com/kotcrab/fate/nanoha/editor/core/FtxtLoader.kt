@@ -9,7 +9,7 @@ class FtxtLoader {
     val entries = TreeMap<File, Array<IntArray>>()
 
     fun load(asmDir: File) {
-        walkDir(asmDir, { asmFile ->
+        walkDir(asmDir, processFile = { asmFile ->
             val ftxt = FtxtDecoder(asmFile)
             entries[asmFile] = ftxt.texts
         })
