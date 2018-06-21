@@ -66,7 +66,6 @@ class FateOutputStream(private val outputStream: OutputStream, littleEndian: Boo
         writeBytes((targetCount - longCount()).toInt())
     }
 
-
     fun longCount(): Long {
         return counter.count
     }

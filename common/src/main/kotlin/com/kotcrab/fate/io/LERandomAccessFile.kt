@@ -1,9 +1,11 @@
 package com.kotcrab.fate.io
 
+import com.kotcrab.fate.util.WINDOWS_932
 import java.io.DataInput
 import java.io.DataOutput
 import java.io.File
 import java.io.RandomAccessFile
+import java.nio.charset.Charset
 
 class LERandomAccessFile(file: File, mode: String) : DataInput, DataOutput {
     constructor(path: String, mode: String) : this(File(path), mode)
@@ -188,4 +190,18 @@ class LERandomAccessFile(file: File, mode: String) : DataInput, DataOutput {
     override fun writeUTF(s: String) {
         raf.writeUTF(s)
     }
+}
+
+fun LERandomAccessFile.writeDatString(string: String, charset: Charset = Charsets.WINDOWS_932): Int {
+    val bytes = string.toByteArray(charset)
+    write(bytes)
+    val padding = 4 - (bytes.size % 4)
+    write(ByteArray(padding))
+    return bytes.size + padding
+}
+
+fun LERandomAccessFile.align(pad: Long) {
+    if (length() % pad == 0L) return
+    val targetCount = (length() / pad + 1) * pad
+    write(ByteArray((targetCount - length()).toInt()))
 }

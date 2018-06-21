@@ -16,6 +16,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.charset.Charset
 import java.nio.file.Paths
+import java.text.DecimalFormat
 
 /** @author Kotcrab */
 
@@ -244,4 +245,12 @@ fun padArray(src: ByteArray, pad: Int = 16): ByteArray {
 
 fun mapValue(value: Float, fromStart: Float, frontEnd: Float, toStart: Float, toEnd: Float): Float {
     return (value - fromStart) / (frontEnd - fromStart) * (toEnd - toStart) + toStart
+}
+
+fun readableFileSize(size: Long): String {
+    val units = arrayOf("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+    if (size <= 0) return "0 B"
+    val digitGroups = (Math.log10(size.toDouble()) / Math.log10(1024.0)).toInt()
+    return DecimalFormat("#,##0.#").format(size / Math.pow(1024.0, digitGroups.toDouble()))
+            .replace(",", ".") + " " + units[digitGroups]
 }

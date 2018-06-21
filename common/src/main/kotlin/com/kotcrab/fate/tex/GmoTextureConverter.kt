@@ -15,7 +15,7 @@ class GmoTextureConverter(private val gimConvExe: File,
         var convertedGimCount = 0
         val gimMagic = "MIG.00.1PSP".toByteArray()
 
-        walkDir(srcDir, {
+        walkDir(srcDir, processFile = {
             if (fileFilter(it)) {
                 println("Processing ${it.relativizePath(srcDir)}")
                 val gmoBytes = it.readBytes()

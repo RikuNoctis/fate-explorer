@@ -13,7 +13,7 @@ class GimTextureConverter(private val gimConvExe: File,
     fun convertTo(outDir: File) {
         outDir.mkdirs()
         var convertedCount = 0
-        walkDir(srcDir, {
+        walkDir(srcDir, processFile = {
             if (fileFilter(it)) {
                 if (it.extension == "gim") {
                     execute(gimConvExe, arrayOf(it, "-o",

@@ -65,12 +65,12 @@ class CpkFile(val file: File, private val log: Log = Log()) {
                 raf.write(newFile.readBytes())
                 placeNextFileAt = raf.filePointer
                 arrayOf("FileSize", "ExtractSize").forEach { columnName ->
-                    patchUtf(input, fileTable, index, columnName, { offset ->
+                    patchUtf(input, fileTable, index, columnName, writer = { offset ->
                         raf.seek(offset)
                         raf.writeInt(newFile.length().toInt())
                     })
                 }
-                patchUtf(input, fileTable, index, "FileOffset", { offset ->
+                patchUtf(input, fileTable, index, "FileOffset", writer = { offset ->
                     raf.seek(offset)
                     raf.writeLong(newFileOffset)
                 })
