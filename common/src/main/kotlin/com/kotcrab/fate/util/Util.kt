@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.RandomAccessFile
 import java.io.Reader
+import java.net.URLDecoder
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.charset.Charset
@@ -253,4 +254,23 @@ fun readableFileSize(size: Long): String {
     val digitGroups = (Math.log10(size.toDouble()) / Math.log10(1024.0)).toInt()
     return DecimalFormat("#,##0.#").format(size / Math.pow(1024.0, digitGroups.toDouble()))
             .replace(",", ".") + " " + units[digitGroups]
+}
+
+fun getJarPath(caller: Class<*>): String {
+    val url = caller.protectionDomain.codeSource.location
+    var path = URLDecoder.decode(url.file, "UTF-8")
+
+    // remove jar name from path
+    if (System.getProperty("os.name").toLowerCase().contains("win")) {
+        path = path.substring(1, path.lastIndexOf('/')) // cut first '/' for Windows
+    } else {
+        path = path.substring(0, path.lastIndexOf('/'))
+    }
+
+    if (path.endsWith("target/classes")) { //launched from ide, remove classes from path
+        path = path.substring(0, path.length - "/classes".length)
+    }
+
+    path = path.replace("/", File.separator)
+    return path + File.separator
 }

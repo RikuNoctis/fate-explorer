@@ -71,6 +71,37 @@ project(':nanoha') {
     }
 }
 
+project(':pktools') {
+    apply plugin: 'application'
+    mainClassName = "com.kotcrab.fate.pktools.PkToolsCli"
+    dependencies {
+        compile project(":fate")
+        compile "com.github.rvesse:airline:2.2.0"
+    }
+
+    task createLauncher {
+        def extraDir = file("$buildDir/distExtra")
+        outputs.dir extraDir
+        doLast {
+            extraDir.mkdirs()
+            new File(extraDir, "pktools.bat").write('@echo off\r\n' +
+                    'call "%~dp0/bin/pktools.bat" %*')
+            new File(extraDir, "drag-and-drop extract.bat").write('@echo off\r\n' +
+                    'call "%~dp0/bin/pktools.bat" extractDnD "%~1"\r\n' +
+                    'echo Operation finished, press any key to close this window...\r\n' +
+                    'pause>nul')
+        }
+    }
+
+    distributions {
+        main {
+            contents {
+                from(createLauncher)
+            }
+        }
+    }
+}
+
 task wrapper(type: Wrapper) {
     gradleVersion = '4.7'
 }
