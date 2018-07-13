@@ -104,6 +104,18 @@ project(':fate') {
         }
     }
 
+    task copyLicense {
+        def extraDir = file("$buildDir/distDocsExtra")
+        outputs.dir extraDir
+        doLast {
+            extraDir.mkdirs()
+            def licenseFile = new File(extraDir, "license")
+            licenseFile.delete()
+            licenseFile << new File(rootDir, "LICENSE").text
+            licenseFile << new File(rootDir, "license-3rd").text
+        }
+    }
+
     task pkToolsStartScript(type: CreateStartScripts) {
         mainClassName = "com.kotcrab.fate.cli.PkToolsCli"
         applicationName = "pktools"
@@ -116,6 +128,7 @@ project(':fate') {
         main {
             contents {
                 from(createWrappers)
+                from(copyLicense)
                 from(copyPythonScripts) {
                     into "python"
                 }
