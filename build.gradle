@@ -49,8 +49,81 @@ project(':common') {
 }
 
 project(':fate') {
+    apply plugin: 'application'
+    mainClassName = "com.kotcrab.fate.cli.FateCli"
     dependencies {
         compile project(":common")
+        compile "com.github.rvesse:airline:2.2.0"
+    }
+
+    task createWrappers {
+        def extraDir = file("$buildDir/distExtra")
+        outputs.dir extraDir
+        doLast {
+            extraDir.mkdirs()
+            new File(extraDir, "fate.bat").write('@echo off\r\n' +
+                    'call "%~dp0/bin/fate.bat" %*')
+            new File(extraDir, "pktools.bat").write('@echo off\r\n' +
+                    'call "%~dp0/bin/pktools.bat" %*')
+            new File(extraDir, "drag-and-drop pk extract.bat").write('@echo off\r\n' +
+                    'call "%~dp0/bin/pktools.bat" extractDnD "%~1"\r\n' +
+                    'echo Operation finished, press any key to close this window...\r\n' +
+                    'pause>nul')
+        }
+    }
+
+    task copyPythonScripts {
+        def extraDir = file("$buildDir/distPythonExtra")
+        outputs.dir extraDir
+        doLast {
+            extraDir.mkdirs()
+            copy {
+                from "$rootDir/python/blender/import_mtb.py"
+                from "$rootDir/python/noesis/data_fate_extella.py"
+                into extraDir
+            }
+        }
+    }
+
+    task buildAnimServ(type: Exec) {
+        commandLine "MSBuild", "$rootDir/native/animserv/animserv.sln",
+                "/property:Configuration=Release", "/property:Platform=x64"
+    }
+
+    task copyAnimServ(dependsOn: ['buildAnimServ']) {
+        def extraDir = file("$buildDir/distAnimServExtra")
+        outputs.dir extraDir
+        doLast {
+            extraDir.mkdirs()
+            copy {
+                from "$rootDir/native/animserv/x64/Release/animserv.exe"
+                from "$rootDir/native/animserv/x64/Release/animserv.dll"
+                from "$rootDir/native/animserv/license-3rd.txt"
+                into extraDir
+            }
+        }
+    }
+
+    task pkToolsStartScript(type: CreateStartScripts) {
+        mainClassName = "com.kotcrab.fate.cli.PkToolsCli"
+        applicationName = "pktools"
+        outputDir = new File(project.buildDir, 'scripts')
+        classpath = jar.outputs.files + project.configurations.runtime
+    }
+    startScripts.dependsOn pkToolsStartScript
+
+    distributions {
+        main {
+            contents {
+                from(createWrappers)
+                from(copyPythonScripts) {
+                    into "python"
+                }
+                from(copyAnimServ) {
+                    into "animserv"
+                }
+            }
+        }
     }
 }
 
@@ -67,37 +140,6 @@ project(':nanoha') {
     distributions {
         main {
             baseName = 'nanoha-script-editor'
-        }
-    }
-}
-
-project(':pktools') {
-    apply plugin: 'application'
-    mainClassName = "com.kotcrab.fate.pktools.PkToolsCli"
-    dependencies {
-        compile project(":fate")
-        compile "com.github.rvesse:airline:2.2.0"
-    }
-
-    task createLauncher {
-        def extraDir = file("$buildDir/distExtra")
-        outputs.dir extraDir
-        doLast {
-            extraDir.mkdirs()
-            new File(extraDir, "pktools.bat").write('@echo off\r\n' +
-                    'call "%~dp0/bin/pktools.bat" %*')
-            new File(extraDir, "drag-and-drop extract.bat").write('@echo off\r\n' +
-                    'call "%~dp0/bin/pktools.bat" extractDnD "%~1"\r\n' +
-                    'echo Operation finished, press any key to close this window...\r\n' +
-                    'pause>nul')
-        }
-    }
-
-    distributions {
-        main {
-            contents {
-                from(createLauncher)
-            }
         }
     }
 }

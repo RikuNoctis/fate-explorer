@@ -1,14 +1,14 @@
-package com.kotcrab.fate.pktools
+package com.kotcrab.fate.cli
 
-import com.github.rvesse.airline.annotations.*
+import com.github.rvesse.airline.annotations.Arguments
+import com.github.rvesse.airline.annotations.Cli
+import com.github.rvesse.airline.annotations.Command
+import com.github.rvesse.airline.annotations.Option
 import com.github.rvesse.airline.annotations.restrictions.Required
 import com.github.rvesse.airline.help.Help
-import com.github.rvesse.airline.parser.errors.ParseException
 import com.kotcrab.fate.file.extella.PkFile
 import com.kotcrab.fate.util.child
-import com.kotcrab.fate.util.getJarPath
 import java.io.File
-import kotlin.system.exitProcess
 
 /** @author Kotcrab */
 @Cli(name = "pktools", description = "Allows to manipulate PK archives",
@@ -17,23 +17,7 @@ import kotlin.system.exitProcess
 object PkToolsCli {
     @JvmStatic
     fun main(args: Array<String>) {
-//        println(args.joinToString(separator = "\n"))
-//        println(getJarPath(PkToolsCli::class.java))
-        val cli = com.github.rvesse.airline.Cli<Runnable>(PkToolsCli::class.java)
-        var cmd: Runnable? = null
-        try {
-            cmd = cli.parse(*args)
-            cmd.run()
-        } catch (e: ParseException) {
-            println(e.message)
-        } catch (e: Exception) {
-            if (e.message == null || cmd !is PkToolsCommand || cmd.showErrorStacktrace) {
-                e.printStackTrace()
-            } else {
-                println("Error: ${e.message}")
-                println("Run with --stacktrace to get the full stack trace")
-            }
-        }
+        FateCli.stdCliLauncher(PkToolsCli::class.java, args)
     }
 }
 
@@ -103,13 +87,7 @@ class ExtractAll : PkToolsCommand() {
     }
 }
 
-abstract class PkToolsCommand : Runnable {
-    @Option(type = OptionType.GLOBAL, name = ["--stacktrace"], description = "Show error full stacktrace")
-    val showErrorStacktrace = false
-    private val baseDir: File by lazy {
-        File(getJarPath(PkToolsCommand::class.java)).parentFile
-    }
-
+abstract class PkToolsCommand : FateCommand() {
     fun getOutputDirectory(pkFile: File): File {
         val outBase = File(baseDir, "out")
         outBase.mkdir()
@@ -137,10 +115,5 @@ abstract class PkToolsCommand : Runnable {
         println("Extracting: ${pkFile.absolutePath}")
         println("Output folder: ${out.absolutePath}")
         PkFile(pkFile, out)
-    }
-
-    fun abort(msg: String): Nothing {
-        println(msg)
-        exitProcess(0)
     }
 }

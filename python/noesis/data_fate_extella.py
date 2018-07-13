@@ -1,3 +1,5 @@
+# Noesis loader for Fate/Extella .mdl files
+
 from collections import namedtuple
 from pprint import pprint
 import struct

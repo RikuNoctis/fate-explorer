@@ -1,2 +1,2 @@
-include 'common', 'fate', 'nanoha', 'pktools'
+include 'common', 'fate', 'nanoha'
 rootProject.name = "FateExplorer"
