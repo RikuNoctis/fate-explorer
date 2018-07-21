@@ -118,6 +118,7 @@ project(':fate') {
 
     task pkToolsStartScript(type: CreateStartScripts) {
         mainClassName = "com.kotcrab.fate.cli.PkToolsCli"
+        applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
         applicationName = "pktools"
         outputDir = new File(project.buildDir, 'scripts')
         classpath = jar.outputs.files + project.configurations.runtime

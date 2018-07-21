@@ -16,10 +16,10 @@
 
 package com.kotcrab.fate.util
 
+import com.google.common.io.BaseEncoding
 import com.google.common.io.ByteStreams
 import com.google.common.reflect.TypeToken
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+import com.google.gson.*
 import com.kotcrab.fate.io.LERandomAccessFile
 import org.apache.commons.exec.CommandLine
 import org.apache.commons.exec.DefaultExecutor
@@ -28,12 +28,14 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.RandomAccessFile
 import java.io.Reader
+import java.lang.reflect.Type
 import java.net.URLDecoder
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.charset.Charset
 import java.nio.file.Paths
 import java.text.DecimalFormat
+
 
 /** @author Kotcrab */
 
@@ -177,11 +179,25 @@ fun StringBuilder.appendLine(text: String = "", newLine: String = "\n") {
 
 val stdGson = createStdGson()
 
-fun createStdGson(prettyPrint: Boolean = true): Gson {
-    return if (prettyPrint) {
-        GsonBuilder().setPrettyPrinting().create()
-    } else {
-        GsonBuilder().create()
+fun createStdGson(prettyPrint: Boolean = true, byteArrayAsBase64: Boolean = true): Gson {
+    val builder = GsonBuilder()
+    if (prettyPrint) {
+        builder.setPrettyPrinting()
+    }
+    if (byteArrayAsBase64) {
+        builder.registerTypeAdapter(ByteArray::class.java, ByteArrayAsBase64TypeAdapter())
+    }
+    return builder.create()
+}
+
+private class ByteArrayAsBase64TypeAdapter : JsonSerializer<ByteArray>, JsonDeserializer<ByteArray> {
+    @Throws(JsonParseException::class)
+    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): ByteArray {
+        return BaseEncoding.base64().decode(json.asString)
+    }
+
+    override fun serialize(src: ByteArray, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
+        return JsonPrimitive(BaseEncoding.base64().encode(src))
     }
 }
 

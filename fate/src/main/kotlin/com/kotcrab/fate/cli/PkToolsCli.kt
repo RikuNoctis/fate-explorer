@@ -23,7 +23,6 @@ import com.github.rvesse.airline.annotations.Option
 import com.github.rvesse.airline.annotations.restrictions.Required
 import com.github.rvesse.airline.help.Help
 import com.kotcrab.fate.file.extella.PkFile
-import com.kotcrab.fate.util.child
 import java.io.File
 
 /** @author Kotcrab */
@@ -79,7 +78,7 @@ class ExtractAll : PkToolsCommand() {
         var failedCount = 0
         pkFiles.forEach { pkFile ->
             try {
-                val out = getOutputDirectory(pkFile)
+                val out = getOutputDirectory(pkFile.nameWithoutExtension)
                 println("Extracting: ${pkFile.absolutePath}")
                 println("Output folder: ${out.absolutePath}")
                 if (out.listFiles().isNotEmpty()) {
@@ -104,14 +103,6 @@ class ExtractAll : PkToolsCommand() {
 }
 
 abstract class PkToolsCommand : FateCommand() {
-    fun getOutputDirectory(pkFile: File): File {
-        val outBase = File(baseDir, "out")
-        outBase.mkdir()
-        val out = outBase.child(pkFile.nameWithoutExtension)
-        out.mkdir()
-        return out
-    }
-
     fun extractPk(pkPath: String, outPath: String) {
         val pkFile = File(pkPath)
         if (pkFile.exists() == false) abort("File does not exist")
@@ -119,7 +110,7 @@ abstract class PkToolsCommand : FateCommand() {
         val out: File
 
         if (outPath.isEmpty()) {
-            out = getOutputDirectory(pkFile)
+            out = getOutputDirectory(pkFile.nameWithoutExtension)
             if (out.listFiles().isNotEmpty()) {
                 abort("Output folder with this archive name already exist: ${pkFile.nameWithoutExtension}")
             }
