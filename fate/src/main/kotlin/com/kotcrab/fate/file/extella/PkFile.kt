@@ -16,6 +16,7 @@
 
 package com.kotcrab.fate.file.extella
 
+import com.google.common.collect.Ordering
 import com.kotcrab.fate.io.FateInputStream
 import com.kotcrab.fate.util.Log
 import com.kotcrab.fate.util.child
@@ -65,8 +66,32 @@ class PkFile(pkFile: File, outDir: File, val log: Log = Log()) {
         val pkhData = mutableListOf<PkhEntry>()
         with(FateInputStream(pkhFile, littleEndian = false)) {
             val pkhFileCount = readInt()
+            val orderCheck = Ordering.from<PkhEntry> { o1, o2 ->
+                Integer.compareUnsigned(o1.lowercasePathHash, o2.lowercasePathHash)
+            }
+
             repeat(pkhFileCount) {
                 pkhData.add(PkhEntry(readInt(), readIntUnsigned(), readInt(), readInt()))
+            }
+            if (orderCheck.isOrdered(pkhData)) {
+                log.info("Detected Fate/Extella format")
+            } else {
+                setPos(0x4)
+                pkhData.clear()
+                repeat(pkhFileCount) {
+                    val pathHash = readInt()
+                    readInt() // always 0 for Link
+                    readInt() // always 0 for Link
+                    val offset = readIntUnsigned()
+                    val decompressedSize = readInt()
+                    val compSize = readInt()
+                    pkhData.add(PkhEntry(pathHash, offset, decompressedSize, compSize))
+                }
+                if (orderCheck.isOrdered(pkhData)) {
+                    log.info("Detected Fate/Extella Link format")
+                } else {
+                    log.fatal("Can't auto detect .pkh format")
+                }
             }
             close()
         }
