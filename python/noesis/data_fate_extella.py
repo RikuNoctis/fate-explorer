@@ -1,4 +1,16 @@
 # Noesis loader for Fate/Extella .mdl files
+# Supports:
+# - Fate/Extella (PC)
+# - Fate/Extella (PS Vita)
+# - Fate/Extella Link (PS Vita)
+
+# ---- Script config ----
+
+onlyLoadAlbedoTexture = True
+optimizeDx11Models = False
+optimizeGxtModels = False
+
+# -----------------------
 
 from collections import namedtuple
 from pprint import pprint
@@ -8,8 +20,6 @@ from os import path
 from inc_noesis import *
 import noesis
 import rapi
-
-onlyLoadAlbedoTexture = False
 
 
 def registerNoesisTypes():
@@ -51,7 +61,8 @@ def fateLoadModel(data, mdlList):
     for _ in range(sectCount):
         sectSizes.append(bs.readInt())
 
-    mesh = Mesh(bs, sectOffsets[0])
+    impl = fateGetPlatformImpl(bs, sectOffsets[0], sectOffsets[1])
+    mesh = Mesh(bs, sectOffsets[0], impl)
     brntre = None
     boneSection = None
     if mesh.bonesExist:
@@ -60,7 +71,7 @@ def fateLoadModel(data, mdlList):
         else:
             brntre = Brntre(bs, sectOffsets[3])
             boneSection = BoneSection(bs, sectOffsets[4])
-    gpr = Gpr(bs, sectOffsets[1], mesh, boneSection, brntre)
+    gpr = Gpr(bs, sectOffsets[1], mesh, boneSection, brntre, impl)
 
     mdl = rapi.rpgConstructModel()
     mdl.setModelMaterials(NoeModelMaterials(mesh.textures, mesh.materials))
@@ -68,12 +79,38 @@ def fateLoadModel(data, mdlList):
         mdl.setBones(boneSection.noeBones)
     mdlList.append(mdl)
 
-    dlog("=== Done, parser ended at: " + hex(bs.tell()) + " ===")
+    dlog("=== Done ===")
     return 1
 
 
+def fateGetPlatformImpl(bs, meshOffset, gprOffset):
+    bs.seekAbs(meshOffset)
+    if bs.readFixedString(4) != "MESH":
+        raise ValueError("MESH section expected")
+    bs.readBytes(0xC)
+    colladaVer = bs.readFixedString(31)
+    extellaLinkMode = "Collada Mesh File Version 1.009" in colladaVer
+
+    bs.seekAbs(gprOffset)
+    if bs.readString() != "GPR":
+        raise ValueError("GPR section expected")
+    bs.readBytes(0x4)
+    platform = bs.readFixedString(4)
+    log("Platform: " + platform)
+    if extellaLinkMode:
+        log("Mode: Fate/Extella Link")
+    else:
+        log("Mode: Fate/Extella")
+    if platform == "DX11":
+        return Dx11Impl()
+    elif platform == "GXM":
+        return GxmImpl(extellaLinkMode)
+    else:
+        raise ValueError("Unsupported platform: " + platform)
+
+
 class Mesh:
-    def __init__(self, bs, offset):
+    def __init__(self, bs, offset, impl):
         bs.seekAbs(offset)
         if bs.readFixedString(4) != "MESH":
             raise ValueError("MESH section expected to be first")
@@ -158,7 +195,9 @@ class Mesh:
             except IOError:
                 log("failed")
                 return None
-            texture = rapi.loadTexByHandler(tex, '.dds')
+            texture = rapi.loadTexByHandler(tex, impl.getTexHandlerName())
+            if texture is None:
+                return None
             texture.name = name
             loadedTextures[path] = texture
             self.textures.append(texture)
@@ -185,9 +224,9 @@ class Mesh:
                         return texFinalPath, texNormalizedName
                     return None, None
 
-                texFinalPath, texNormalizedName = getTexPath(".mds")
+                texFinalPath, texNormalizedName = getTexPath(impl.getTexExtensions()[0])
                 if texFinalPath is None:
-                    texFinalPath, texNormalizedName = getTexPath(".dds")
+                    texFinalPath, texNormalizedName = getTexPath(impl.getTexExtensions()[1])
                 if texFinalPath is None:
                     continue
 
@@ -198,12 +237,13 @@ class Mesh:
                     continue
 
                 texType = self.stringBank[sstv.texTypeSid]
-                #  always ignored types: Outline0, Custom0
-                if texType == "Albedo0":
+                # always ignored types for Extella: Outline0, Custom0
+                # always ignored types for Extella Link: FogIBL, ARMMap, ENVBRDF_LUT, EmissiveMap
+                if texType in ["Albedo0", "DiffuseMap"]:
                     loadTexture(texFinalPath, texNormalizedName)
                     material.setTexture(texNormalizedName)
                 if not onlyLoadAlbedoTexture:
-                    if texType == "Normal0":
+                    if texType in ["Normal0", "NormalMap"]:
                         loadTexture(texFinalPath, texNormalizedName)
                         material.setNormalTexture(texNormalizedName)
                     if texType == "Speculer0":  # not a typo
@@ -215,7 +255,7 @@ class Mesh:
 
 
 class Gpr:
-    def __init__(self, bs, offset, mesh, boneSect, brntre):
+    def __init__(self, bs, offset, mesh, boneSect, brntre, impl):
         bs.seekAbs(offset)
         if bs.readString() != "GPR":
             raise ValueError("GPR section expected to be second")
@@ -248,11 +288,6 @@ class Gpr:
         bs.readBytes(heapSize)
         modelName = bs.readString()
         log("Model name: " + modelName)
-        useAltStride44OrderFor = []
-        if modelName == "SV1310_PS4":
-            useAltStride44OrderFor.append(0x47a70)
-        if modelName == "SV0803_PS4":
-            useAltStride44OrderFor.append(0x592c0)
         bs.seekAlign(0x10)
 
         self.nearOffset = bs.tell()
@@ -275,7 +310,7 @@ class Gpr:
         vxstEntryCount = []
         for _, des in enumerate(vxstList):
             bs.seek(des.offset + self.nearOffset, NOESEEK_ABS)
-            bs.readBytes(0x18)
+            bs.readBytes(impl.getVxstEntryCountOffset())
             vxstEntryCount.append(bs.readInt())
 
         vxbfEntryCount = []
@@ -292,6 +327,7 @@ class Gpr:
 
         if len(vxbfList) > len(ixbfList):
             warn("VXBF count > IXBF count, some data not processed")
+            # not sure if this will work for Link
             idxToRemove = []
             for i, length in enumerate(vxbfEntryLen):
                 if length <= 16:
@@ -307,7 +343,11 @@ class Gpr:
             rapi.rpgSetName(mesh.stringBank[mesh.primInfo[i].meshGeomNameSid])
             bs.seek(des.farOffset + self.farOffset, NOESEEK_ABS)
             vertStride = vxbfEntryLen[i]
+            dlog("Parse verts at " + hex(bs.tell()) + " with stride " + str(vertStride))
             vertBuff = bs.readBytes(des.farSize)
+
+            def bindBones(boneOffset, weightOffset, stride):
+                VertexBones(boneOffset, weightOffset, stride)
 
             class VertexBones:
                 def __init__(self, boneOffset, weightOffset, stride):
@@ -358,75 +398,21 @@ class Gpr:
                                 try:
                                     b[i] = brntre.boneMeshToSkelMap[bv]
                                 except KeyError:
-                                    warn("Missing mapping for mesh bone " + str(bv))
+                                    #warn("Missing mapping for mesh bone " + str(bv))
+                                    pass
 
-            # not implemented:
-            # 4, 8, 12 - do not have IXBF
-            # 16 - unknown format, do not have IXBF probably, 20 - not used by any game model
-            if vertStride == 24:  # 0xC, 0x10 unk floats
-                rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
-                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x14)
-            elif vertStride == 28:  # 0xC, 0x10, 0x14 unk floats
-                rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
-                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x18)
-            elif vertStride == 32:  # 0xC, 0x10, 0x14 unk floats, 0x1C unk
-                rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
-                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x18)
-            elif vertStride == 36:  # 0xC, 0x10, 0x14 unk floats, 0x1C unk
-                rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
-                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x18)
-                rapi.rpgBindColorBufferOfs(vertBuff, noesis.RPGEODATA_UBYTE, vertStride, 0x20, 4)
-            elif vertStride == 40:  # 0xC, 0x10, 0x14 unk floats, 0x1C unk
-                rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
-                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x18)
-                VertexBones(0x20, 0x24, vertStride)
-            elif vertStride == 44:  # 0xC, 0x10, 0x14 unk floats, 0x1C unk
-                rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
-                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x18)
-                if des.farOffset in useAltStride44OrderFor:
-                    VertexBones(0x24, 0x28, vertStride)
-                else:
-                    VertexBones(0x20, 0x24, vertStride)
-                    rapi.rpgBindColorBufferOfs(vertBuff, noesis.RPGEODATA_UBYTE, vertStride, 0x28, 4)
-            elif vertStride == 48:  # 0xC, 0x10, 0x14 unk floats, 0x1C, 0x1C, 0x20, 0x24, 0x28 unk
-                rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
-                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x18)
-                rapi.rpgBindColorBufferOfs(vertBuff, noesis.RPGEODATA_UBYTE, vertStride, 0x2C, 4)
-            else:
-                rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
-                warn("Don't know how to parse vertex stride: {}.".format(vertStride))
-
+            impl.bindVertStride(modelName, rapi, des, vertBuff, vertStride, bindBones)
             bs.seek(ixbfList[i].farOffset + self.farOffset, NOESEEK_ABS)
 
-            def nextFace():
-                nextFace.idx += 1
-                return bs.readUShort()
-
-            nextFace.idx = 0
-            faceFlip = True
-            faceList = []
-
-            f1 = nextFace()
-            f2 = nextFace()
-
-            while nextFace.idx < vxstEntryCount[i]:
-                f3 = nextFace()
-                if f3 == 0xFFFF:
-                    f1 = nextFace()
-                    f2 = nextFace()
-                    faceFlip = True
-                else:
-                    faceFlip = not faceFlip
-                    if f1 != f2 and f2 != f3 and f3 != f1:
-                        if not faceFlip:
-                            faceList.extend([f1, f2, f3])
-                        else:
-                            faceList.extend([f1, f3, f2])
-                    f1 = f2
-                    f2 = f3
-            rapi.rpgSetMaterial(mesh.materials[mesh.primInfo[i].matId].name)
+            faceList = impl.getFaceList(bs, vxstEntryCount[i])
             faceBuff = struct.pack('H' * len(faceList), *faceList)
+
+            rapi.rpgSetMaterial(mesh.materials[mesh.primInfo[i].matId].name)
+            if impl.needsUVFlip():
+                rapi.rpgSetUVScaleBias(NoeVec3((1.0, -1.0, 1.0)), NoeVec3((1.0, 1.0, 1.0)))
             rapi.rpgCommitTriangles(faceBuff, noesis.RPGEODATA_USHORT, len(faceList), noesis.RPGEO_TRIANGLE, 1)
+            if impl.needsOptimize():
+                rapi.rpgOptimize()
             rapi.rpgClearBufferBinds()
 
 
@@ -503,6 +489,181 @@ class BoneSection:
         for i in range(boneCount):
             self.noeBones.append(NoeBone(i, boneNames[i], boneMatrixes[i], None, parentMap.get(i, -1)))
         self.noeBones = rapi.multiplyBones(self.noeBones)
+
+
+class GxmImpl:
+    def __init__(self, extellaLinkMode):
+        self.extellaLinkMode = extellaLinkMode
+
+    def bindVertStride(self, modelName, rapi, des, vertBuff, vertStride, bindBones):
+        if vertStride == 19 and not self.extellaLinkMode:
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0xF)
+        elif vertStride == 20:
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            if self.extellaLinkMode:
+                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x10)
+            else:
+                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0xC)
+        elif vertStride == 23:
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            if self.extellaLinkMode:
+                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x13)
+            else:
+                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0xF)
+        elif vertStride == 24:
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            if self.extellaLinkMode:
+                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x14)
+            else:
+                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0xC)
+        elif vertStride == 27:
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x17)
+        elif vertStride == 28:
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            if self.extellaLinkMode:
+                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x18)
+            else:
+                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0xC)
+        elif vertStride == 31:
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            if self.extellaLinkMode:
+                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x13)
+                bindBones(0x1B, 0x17, vertStride)
+            else:
+                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0xF)
+                #bindBones(0x17, 0x1B, vertStride)
+        elif vertStride == 35:  #
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            if self.extellaLinkMode:
+                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x17)
+                bindBones(0x1F, 0x1B, vertStride)
+            else:
+                rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0xF)
+                #bindBones(0x1F, 0x1B, vertStride)
+        else:
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            warn("Don't know how to parse vertex stride: {}.".format(vertStride))
+
+    def getFaceList(self, bs, vxstEntryCount):
+        def nextFace():
+            nextFace.idx += 1
+            return bs.readUShort()
+
+        nextFace.idx = 0
+        faceList = []
+
+        while nextFace.idx < vxstEntryCount:
+            f1 = nextFace()
+            f2 = nextFace()
+            f3 = nextFace()
+            faceList.extend([f1, f2, f3])
+        return faceList
+
+    def getVxstEntryCountOffset(self):
+        return 0x10
+
+    def getTexExtensions(self):
+        return [".mxt", ".gxt"]
+
+    def getTexHandlerName(self):
+        return ".gxt"
+
+    def needsUVFlip(self):
+        return self.extellaLinkMode
+
+    def needsOptimize(self):
+        return optimizeGxtModels
+
+
+class Dx11Impl:
+    def bindVertStride(self, modelName, rapi, des, vertBuff, vertStride, bindBones):
+        useAltStride44OrderFor = []
+        if modelName == "SV1310_PS4":
+            useAltStride44OrderFor.append(0x47a70)
+        if modelName == "SV0803_PS4":
+            useAltStride44OrderFor.append(0x592c0)
+
+        # not implemented:
+        # 4, 8, 12 - do not have IXBF
+        # 16 - unknown format, do not have IXBF probably, 20 - not used by any game model
+        if vertStride == 24:  # 0xC, 0x10 unk floats
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x14)
+        elif vertStride == 28:  # 0xC, 0x10, 0x14 unk floats
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x18)
+        elif vertStride == 32:  # 0xC, 0x10, 0x14 unk floats, 0x1C unk
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x18)
+        elif vertStride == 36:  # 0xC, 0x10, 0x14 unk floats, 0x1C unk
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x18)
+            rapi.rpgBindColorBufferOfs(vertBuff, noesis.RPGEODATA_UBYTE, vertStride, 0x20, 4)
+        elif vertStride == 40:  # 0xC, 0x10, 0x14 unk floats, 0x1C unk
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x18)
+            bindBones(0x20, 0x24, vertStride)
+        elif vertStride == 44:  # 0xC, 0x10, 0x14 unk floats, 0x1C unk
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x18)
+            if des.farOffset in useAltStride44OrderFor:
+                bindBones(0x24, 0x28, vertStride)
+            else:
+                bindBones(0x20, 0x24, vertStride)
+                rapi.rpgBindColorBufferOfs(vertBuff, noesis.RPGEODATA_UBYTE, vertStride, 0x28, 4)
+        elif vertStride == 48:  # 0xC, 0x10, 0x14 unk floats, 0x1C, 0x1C, 0x20, 0x24, 0x28 unk
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            rapi.rpgBindUV1BufferOfs(vertBuff, noesis.RPGEODATA_HALFFLOAT, vertStride, 0x18)
+            rapi.rpgBindColorBufferOfs(vertBuff, noesis.RPGEODATA_UBYTE, vertStride, 0x2C, 4)
+        else:
+            rapi.rpgBindPositionBuffer(vertBuff, noesis.RPGEODATA_FLOAT, vertStride)
+            warn("Don't know how to parse vertex stride: {}.".format(vertStride))
+
+    def getFaceList(self, bs, vxstEntryCount):
+        def nextFace():
+            nextFace.idx += 1
+            return bs.readUShort()
+
+        nextFace.idx = 0
+        faceFlip = True
+        faceList = []
+
+        f1 = nextFace()
+        f2 = nextFace()
+
+        while nextFace.idx < vxstEntryCount:
+            f3 = nextFace()
+            if f3 == 0xFFFF:
+                f1 = nextFace()
+                f2 = nextFace()
+                faceFlip = True
+            else:
+                faceFlip = not faceFlip
+                if f1 != f2 and f2 != f3 and f3 != f1:
+                    if not faceFlip:
+                        faceList.extend([f1, f2, f3])
+                    else:
+                        faceList.extend([f1, f3, f2])
+                f1 = f2
+                f2 = f3
+        return faceList
+
+    def getVxstEntryCountOffset(self):
+        return 0x18
+
+    def getTexExtensions(self):
+        return [".mds", ".dds"]
+
+    def getTexHandlerName(self):
+        return ".dds"
+
+    def needsUVFlip(self):
+        return False
+
+    def needsOptimize(self):
+        return optimizeDx11Models
 
 
 # Helpers
