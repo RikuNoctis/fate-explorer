@@ -205,9 +205,9 @@ class GearsPatcher {
     fun buildIso() {
         println("--- Writing ISO ---")
         execute(mkisofsTool, workingDirectory = baseDir, streamHandler = PumpStreamHandler(System.out, System.out),
-                args = arrayOf("-sort", isoFileList.toRelativeNixPath(), "-iso-level", "4", "-xa",
+                args = arrayOf("-sort", isoFileList.toRelativeNixPath(baseDir), "-iso-level", "4", "-xa",
                         "-sysid", "\"PSP GAME\"", "-A", "\"PSP GAME\"", "-V", "NANOHA", "-publisher", "NANOHA",
-                        "-o", outIso.toRelativeNixPath(), isoBuildDir.toRelativeNixPath()))
+                        "-o", outIso.toRelativeNixPath(baseDir), isoBuildDir.toRelativeNixPath(baseDir)))
     }
 
     private fun fixSoundLba() {
@@ -401,9 +401,5 @@ exit /b 1
         if (result == false) println("WARN: Public dest delete patch directory failed")
         xdeltaDir.copyRecursively(patchDir, overwrite = true)
         isoFileList.copyTo(patchDir.child(isoFileList.name), overwrite = true)
-    }
-
-    private fun File.toRelativeNixPath(): Any {
-        return relativizePath(baseDir).replace("\\", "/")
     }
 }

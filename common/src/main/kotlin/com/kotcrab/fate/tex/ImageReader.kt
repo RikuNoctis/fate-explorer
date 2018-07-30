@@ -20,6 +20,8 @@ import java.awt.image.BufferedImage
 
 /** @author Kotcrab */
 class ImageReader(srcImage: BufferedImage, newImageDataWidth: Int, newImageDataHeight: Int) {
+    constructor(srcImage: BufferedImage) : this(srcImage, srcImage.width, srcImage.height)
+
     private val image = BufferedImage(newImageDataWidth, newImageDataHeight, srcImage.type)
     private var xPos = 0
     private var yPos = 0
@@ -28,6 +30,10 @@ class ImageReader(srcImage: BufferedImage, newImageDataWidth: Int, newImageDataH
         val g2d = image.createGraphics()
         g2d.drawImage(srcImage, 0, 0, null)
         g2d.dispose()
+    }
+
+    fun eof(): Boolean {
+        return yPos == image.height
     }
 
     fun nextPixel(): Int {

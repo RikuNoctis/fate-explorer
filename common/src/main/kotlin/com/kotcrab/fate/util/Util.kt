@@ -141,6 +141,13 @@ fun RandomAccessFile.readNullTerminatedString(charset: Charset = Charsets.US_ASC
     return String(out.toByteArray(), charset)
 }
 
+fun LERandomAccessFile.temporaryJump(addr: Int, reader: (LERandomAccessFile) -> Unit) {
+    val lastPos = filePointer
+    seek(addr)
+    reader(this)
+    seek(lastPos)
+}
+
 fun File.relativizePath(base: File): String {
     val pathAbsolute = Paths.get(this.absolutePath.toString())
     val pathBase = Paths.get(base.absolutePath.toString())
@@ -148,6 +155,10 @@ fun File.relativizePath(base: File): String {
     var path = pathRelative.toString().replace("\\", "/")
     if (this.isDirectory) path += "/"
     return path
+}
+
+fun File.toRelativeNixPath(base: File): Any {
+    return relativizePath(base).replace("\\", "/")
 }
 
 fun File.child(name: String): File {
