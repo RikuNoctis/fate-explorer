@@ -117,6 +117,15 @@ fun Assembler.float(value: Float) {
     data(buf.order(ByteOrder.BIG_ENDIAN).int)
 }
 
+fun Assembler.writeBytes(bytes: ByteArray) {
+    if (bytes.size % 4 != 0) error("Buffer size is not aligned to word size")
+    with(FateInputStream(bytes)) {
+        while (!eof()) {
+            data(readInt())
+        }
+    }
+}
+
 fun Assembler.word(intValue: Long): Int {
     val addr = virtualPc
     data(intValue.toInt())
