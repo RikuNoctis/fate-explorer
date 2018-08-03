@@ -24,6 +24,8 @@ import java.io.RandomAccessFile
 import java.nio.charset.Charset
 
 class LERandomAccessFile(file: File, mode: String) : DataInput, DataOutput {
+    constructor(file: File) : this(file, "rw")
+    constructor(path: String) : this(File(path), "rw")
     constructor(path: String, mode: String) : this(File(path), mode)
 
     private var raf = RandomAccessFile(file, mode)

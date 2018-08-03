@@ -32,7 +32,7 @@ class Tm2NamesPatcher(private val srcTm2: File, private val srcPng: File) {
         srcTm2.copyTo(outFile, overwrite = true)
         val img = ImageIO.read(srcPng)
 
-        with(LERandomAccessFile(outFile, "rw")) {
+        with(LERandomAccessFile(outFile)) {
             seek(0x8470)
             val origPaletteBytes = ByteArray(0x400)
             read(origPaletteBytes)

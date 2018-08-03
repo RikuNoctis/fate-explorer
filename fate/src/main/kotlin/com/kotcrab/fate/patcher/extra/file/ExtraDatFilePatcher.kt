@@ -29,7 +29,7 @@ class ExtraDatFilePatcher(origBytes: ByteArray, outFile: File, translation: Extr
                           entries: List<CombinedDatEntry>) {
     init {
         outFile.writeBytes(origBytes)
-        val raf = LERandomAccessFile(outFile, "rw")
+        val raf = LERandomAccessFile(outFile)
 
         var modified = false
         val attachedTextMap = mutableMapOf<String, Long>()

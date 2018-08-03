@@ -210,7 +210,7 @@ private class GearsFntMerge(val srcFnt: File, val pngFile: File, val hieroDefs: 
 
     fun mergeTo(outFile: File, charIdToGlyphId: Map<Int, Int>) {
         srcFnt.copyTo(outFile, overwrite = true)
-        with(LERandomAccessFile(outFile, "rw")) {
+        with(LERandomAccessFile(outFile)) {
             hieroDefs.chars.forEach { char ->
                 val glyphId = charIdToGlyphId[char.id] ?: return@forEach
                 seek(glyphWidthSectPos + glyphId * 0x2)

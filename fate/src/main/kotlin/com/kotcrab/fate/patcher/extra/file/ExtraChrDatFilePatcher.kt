@@ -30,7 +30,7 @@ class ExtraChrDatFilePatcher(origBytes: ByteArray, outFile: File, translation: E
                              translationOffset: Int, count: Int, charset: Charset = Charsets.WINDOWS_932) {
     init {
         outFile.writeBytes(origBytes)
-        val raf = LERandomAccessFile(outFile, "rw")
+        val raf = LERandomAccessFile(outFile)
 
         val attachedTextMap = mutableMapOf<String, Long>()
         repeat(count) { offset ->

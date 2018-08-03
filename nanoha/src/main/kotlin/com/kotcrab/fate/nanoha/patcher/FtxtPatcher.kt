@@ -33,7 +33,7 @@ class FtxtPatcher(private val srcAsmFile: File,
         if (ftxtSectOffset == -1) error("This ASM file does not have FTXT section")
 
         srcAsmFile.copyTo(targetFile, overwrite = true)
-        with(LERandomAccessFile(targetFile, "rw")) {
+        with(LERandomAccessFile(targetFile)) {
             seek(ftxtSectOffset + 0x8)
             val entriesCount = readInt()
 

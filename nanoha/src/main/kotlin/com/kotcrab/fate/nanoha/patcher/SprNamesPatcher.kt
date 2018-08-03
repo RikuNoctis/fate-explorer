@@ -24,7 +24,7 @@ import java.io.File
 class SprNamesPatcher(private val sprFile: File, private val boundsDef: File, private val newWidth: Int, private val newHeight: Int) {
     fun patchTo(outFile: File) {
         sprFile.copyTo(outFile, overwrite = true)
-        with(LERandomAccessFile(outFile, "rw")) {
+        with(LERandomAccessFile(outFile)) {
             seek(0x24)
             val pointers = mutableListOf<Int>()
             while (true) {
