@@ -38,6 +38,10 @@ class LERandomAccessFile(file: File, mode: String) : DataInput, DataOutput {
         return raf.length()
     }
 
+    fun setLength(newLength: Long) {
+        raf.setLength(newLength)
+    }
+
     fun close() {
         raf.close()
     }
