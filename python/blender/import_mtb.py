@@ -1,4 +1,5 @@
 # Animation import utility for Fate/Extella .mtb files
+
 # Make sure animserv is running in the background before executing this script
 
 # Configuration:
@@ -6,8 +7,9 @@
 # Model and animation files path
 # You can either enter absolutes paths or simply copy those files 
 # next to current Blender file and only type their file names
-mdlPath = "SV0000.mdl"
-mtbPath = "SV0000_BS_WALK------_--_LP.mtb"
+# mtbPath can be a directory to batch import multiple .mtb
+mdlPath = "ch002_m01_00.mdl"
+mtbPath = "motion/ch002_m01_0202.mtb"
 
 # Name of Blender skeleton to which animation data will be applied
 blenderSkeletonTarget = "Armature"
@@ -17,7 +19,7 @@ blenderSkeletonTarget = "Armature"
 framePartDiv = 3
 
 # This will delete all previous animation data before importing
-# Set to True to avoid weird artifacts
+# Set to True to avoid weird artifacts when testing multiple animations
 deleteOldKeyframes = True
 
 # ----------------------------------------------
@@ -26,14 +28,17 @@ from struct import *
 from pathlib import Path
 import socket
 import bpy
+import os
 
 def importMtb():
     mdl = Path(mdlPath)
     mtb = Path(mtbPath)
+    blenderFileDir = os.path.dirname(bpy.data.filepath)
+    os.chdir(blenderFileDir)
     if not mdl.is_file():
         raise ValueError("MDL file does not exist")
-    if not mtb.is_file():
-        raise ValueError("MTB file does not exist")
+    if not mtb.is_file() and not mtb.is_dir():
+        raise ValueError("MTB file or dir does not exist")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(("127.0.0.1", 54217))
     mdlBoneNames = readMdlBoneList()
@@ -41,30 +46,58 @@ def importMtb():
     framePartsCount = len(frameParts)
     if deleteOldKeyframes:
          bpy.data.objects[blenderSkeletonTarget].animation_data_clear()
-    mtbFrameSetOffset, mtbFrameCount = readFrameSetInfo(mtbPath)
     ctx = bpy.context
+    frameCount = 0
+    
+    mtbToImport = []
+    if mtb.is_file():
+        mtbToImport.append(mtb)
+    else:
+        mtbListing = mtb.glob('*.mtb')
+        mtbToImport.extend([x for x in mtbListing if x.is_file()])
+    
+    for mtbFile in mtbToImport:
+        mtbFrameSetOffsets, mtbFrameCounts = readFrameSetInfo(str(mtbFile.resolve()))
+        remoteLoadFile(sock, mtbFile)
+        for frameSetIdx in range(0, len(mtbFrameCounts)):
+            if mtbFrameCounts[frameSetIdx] != 0:
+                for idx in range(0, mtbFrameCounts[frameSetIdx] + 1):
+                    for partIdx, part in enumerate(frameParts):
+                        frameData = remoteDecodeFrame(sock, mtbFrameSetOffsets[frameSetIdx], idx, mtbFrameCounts[frameSetIdx], part)
+                        pushLocalFrame(frameData, mdlBoneNames, frameCount)
+                        frameCount += 1
+            else:
+                frameData = remoteDecodeFrame(sock, mtbFrameSetOffsets[frameSetIdx], 0, mtbFrameCounts[frameSetIdx], 0)
+                pushLocalFrame(frameData, mdlBoneNames, frameCount)
+                frameCount += 1   
     ctx.scene.frame_start = 0
-    ctx.scene.frame_end = (mtbFrameCount + 1) * framePartsCount
+    ctx.scene.frame_end = frameCount - 1
     ctx.scene.frame_current = 0
-    remoteLoadFile(sock, mtb)
-    for idx in range(0, mtbFrameCount + 1):
-        for partIdx, part in enumerate(frameParts):
-            frameData = remoteDecodeFrame(sock, mtbFrameSetOffset, idx, mtbFrameCount, part)
-            pushLocalFrame(frameData, mdlBoneNames, idx * framePartsCount + partIdx)
     sock.close()
-
+    
 def readFrameSetInfo(mtbPath):
-    mtbFrameSetOffset = -1
-    mtbFrameCount = -1
+    mtbFrameSetCount = -1
+    mtbFrameSetInfoOffset1 = -1
+    mtbFrameSetInfoOffset2 = -1
+    mtbFrameSetOffsets = []
+    mtbFrameSetFrameCounts = []
     with open(mtbPath, 'rb') as mtb:
         stream = LEInputStream(mtb)         
-        stream.seek(0xC)
-        mtbFrameSetOffset = stream.readShort()
+        stream.seek(0x12)
+        mtbFrameSetCount = stream.readShort()
+        stream.seek(0x38)
+        mtbFrameSetInfoOffset1 = stream.tell() + stream.readInt()
         stream.seek(0x3C)
-        frameSetHeader = stream.tell() + stream.readInt()
-        stream.seek(frameSetHeader + 2)
-        mtbFrameCount = stream.readShort()
-    return mtbFrameSetOffset, mtbFrameCount
+        mtbFrameSetInfoOffset2 = stream.tell() + stream.readInt()
+        stream.seek(mtbFrameSetInfoOffset1)
+        for idx in range(0, mtbFrameSetCount):
+            stream.readInt()
+            mtbFrameSetOffsets.append(stream.readInt())
+        stream.seek(mtbFrameSetInfoOffset2)
+        for idx in range(0, mtbFrameSetCount):
+            stream.readShort()
+            mtbFrameSetFrameCounts.append(stream.readShort())
+    return mtbFrameSetOffsets, mtbFrameSetFrameCounts
 
 def getFrameParts():
     inc = 1.0 / framePartDiv
@@ -73,8 +106,6 @@ def getFrameParts():
     while cur < 1.0:
         parts.append(cur)
         cur += inc
-        print(cur)
-    print(parts)
     return parts
 
 def readMdlBoneList():
@@ -97,6 +128,9 @@ def readMdlBoneList():
     return boneNames
 
 def pushLocalFrame(frameData, boneNames, frameIdx: int):
+    if(len(frameData) < 0x30 * len(boneNames)):
+            print("WARN: Too small frame data, dropping frame %d" % frameIdx)
+            return
     for boneIdx, boneName in enumerate(boneNames):
         blenderBone = getBlenderBoneByName(boneName)
         if blenderBone is None:
