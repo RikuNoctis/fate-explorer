@@ -32,7 +32,7 @@ def registerNoesisTypes():
 
 
 def fateCheckType(data):
-    if len(data) > 4 and NoeBitStream(data).readFixedString(4) == "KPKy":
+    if len(data) > 4 and NoeBitStream(data).readInt() == 0x794B504B:
         return 1
     return 0
 
