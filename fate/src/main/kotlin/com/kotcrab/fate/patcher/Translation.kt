@@ -18,6 +18,7 @@ package com.kotcrab.fate.patcher
 
 import java.io.File
 
+/** @author Kotcrab */
 abstract class Translation(jpFile: File, enFile: File = jpFile.resolveSibling("script-translation.txt"),
                            stripNewLine: Boolean = false,
                            private val overrides: Map<Int, String> = mapOf()) {

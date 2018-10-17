@@ -16,7 +16,7 @@
 
 package com.kotcrab.fate
 
-import com.kotcrab.fate.util.child
+import kio.util.child
 
 /** @author Kotcrab */
 val fateBase = projectBase.child("Fate")

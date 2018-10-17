@@ -16,7 +16,7 @@
 
 package com.kotcrab.fate.nanoha.file
 
-import com.kotcrab.fate.io.FateInputStream
+import kio.KioInputStream
 import java.io.File
 
 /** @author Kotcrab */
@@ -29,7 +29,7 @@ class PacFile(bytes: ByteArray) {
     init {
         val fileEntries = mutableListOf<PacFileEntry>()
 
-        with(FateInputStream(bytes)) {
+        with(KioInputStream(bytes)) {
             if (readStringAndTrim(4) != "add") error("Not a PAC 'add' file")
             val version = readInt()
             if (version != 4) error("Only pac file version 4 is supported")
@@ -48,7 +48,7 @@ class PacFile(bytes: ByteArray) {
                 skip(0xC)
 
                 temporaryJump(fileNamePtr) {
-                    val fileName = readNullTerminatedString()
+                    val fileName = readNullTerminatedString(Charsets.US_ASCII)
                     temporaryJump(fileDataPtr) {
                         val fileBytes = readBytes(fileSize)
                         fileEntries.add(PacFileEntry(fileName, fileSize, timet, fileBytes))

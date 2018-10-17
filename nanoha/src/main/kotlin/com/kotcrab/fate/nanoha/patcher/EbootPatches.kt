@@ -16,7 +16,14 @@
 
 package com.kotcrab.fate.nanoha.patcher
 
-import com.kotcrab.fate.util.*
+import com.kotcrab.fate.util.EbootPatch
+import com.kotcrab.fate.util.patch
+import com.kotcrab.fate.util.preserve
+import com.kotcrab.fate.util.word
+import kio.util.highBits
+import kio.util.lowBits
+import kio.util.swapBytes
+import kio.util.toUnsignedInt
 import kmips.FpuReg.*
 import kmips.Label
 import kmips.Reg.*
@@ -184,7 +191,7 @@ class EbootPatches {
                         val b4 = it.getOrElse(3, { 0x0 }).toUnsignedInt()
                         b1 or b2 or b3 or b4
                     }).forEach {
-                        word(it.toLittleEndian())
+                        word(it.swapBytes())
                     }
                 }
             }

@@ -16,8 +16,9 @@
 
 package com.kotcrab.fate.nanoha.patcher
 
-import com.kotcrab.fate.io.FateOutputStream
-import com.kotcrab.fate.util.padArray
+import com.kotcrab.fate.util.writeDatString
+import kio.KioOutputStream
+import kio.util.padArray
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -26,13 +27,13 @@ class LzsEncoder(inFile: File, lzsName: String) {
     var compressedBytes: ByteArray
 
     init {
-        val lzsNameLen = with(FateOutputStream(ByteArrayOutputStream())) {
+        val lzsNameLen = with(KioOutputStream(ByteArrayOutputStream())) {
             writeDatString(lzsName)
             getAsByteArrayOutputStream().toByteArray().size
         }
 
         val bs = ByteArrayOutputStream()
-        with(FateOutputStream(bs)) {
+        with(KioOutputStream(bs)) {
             val comprOffset = 0x20 + lzsNameLen
             val inBytes = padArray(inFile.readBytes())
             val compr = ByteArray(inBytes.size / 8, { 0xFF.toByte() })

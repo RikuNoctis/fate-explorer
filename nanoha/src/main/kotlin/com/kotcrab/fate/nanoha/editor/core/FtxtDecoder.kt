@@ -16,9 +16,10 @@
 
 package com.kotcrab.fate.nanoha.editor.core
 
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.util.getSubArrayPos
-import com.kotcrab.fate.util.toUnsignedInt
+import com.kotcrab.fate.util.readDatString
+import kio.KioInputStream
+import kio.util.getSubArrayPos
+import kio.util.toUnsignedInt
 import java.io.File
 
 /** @author Kotcrab */
@@ -32,7 +33,7 @@ class FtxtDecoder(asm: ByteArray) {
         val ftxtSection = getSubArrayPos(asm, "FTXT".toByteArray())
         if (ftxtSection == -1) error("This ASM file does not have FTXT section")
         val texts = mutableListOf<IntArray>()
-        with(FateInputStream(asm)) {
+        with(KioInputStream(asm)) {
             setPos(ftxtSection)
             if (readString(4) != "FTXT") error("Not a FTXT section")
             val unkFlag = readInt()
@@ -51,7 +52,7 @@ class FtxtDecoder(asm: ByteArray) {
 
             val fileName = readDatString()
             align(16)
-            val textSectionStart = count() + pointerSectionSize
+            val textSectionStart = pos() + pointerSectionSize
 
             val pointers = mutableListOf<Int>()
             repeat(count) {

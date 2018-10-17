@@ -20,6 +20,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
+/** @author Kotcrab */
 class HieroFile(fntFile: File, pngFile: File) {
     val fontImg = ImageIO.read(pngFile)
 

@@ -17,7 +17,7 @@
 package com.kotcrab.fate.nanoha
 
 import com.kotcrab.fate.projectBase
-import com.kotcrab.fate.util.child
+import kio.util.child
 
 /** @author Kotcrab */
 val gearsBase = projectBase.child("Gears")

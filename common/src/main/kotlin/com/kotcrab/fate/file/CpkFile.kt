@@ -16,13 +16,13 @@
 
 package com.kotcrab.fate.file
 
-import com.kotcrab.fate.io.BitInputStream
-import com.kotcrab.fate.io.FastByteArrayOutputStream
-import com.kotcrab.fate.io.FateInputStream
 import com.kotcrab.fate.util.Log
-import com.kotcrab.fate.util.child
-import com.kotcrab.fate.util.toHex
-import com.kotcrab.fate.util.toUnsignedInt
+import kio.BitInputStream
+import kio.FastByteArrayOutputStream
+import kio.KioInputStream
+import kio.util.child
+import kio.util.toUnsignedInt
+import kio.util.toWHex
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.RandomAccessFile
@@ -56,7 +56,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
     }
 
     fun patchInPlace(patchedFiles: Map<String, File>, dataAlign: Long = 2048, insertNewFilesAt: Long = -1) {
-        val input = FateInputStream(file, littleEndian = false)
+        val input = KioInputStream(file, littleEndian = false)
         val raf = RandomAccessFile(file, "rw")
 
         val tocTable = createUtfTable(input, 0)
@@ -73,7 +73,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
             val relPath = "$dirName/$fileName"
             if (patchedFiles.containsKey(relPath)) {
                 val newFile = patchedFiles[relPath]!!
-                log.info("Patching $relPath at ${fileOffset.toHex()}")
+                log.info("Patching $relPath at ${fileOffset.toWHex()}")
                 raf.seek(placeNextFileAt)
                 raf.align(dataAlign)
                 val newFileOffset = raf.filePointer - tocOffset
@@ -104,7 +104,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
         if (ignoreNotEmptyOut == false && outDir.exists() && outDir.list().isNotEmpty()) log.fatal("outDir is not empty")
         outDir.mkdirs()
 
-        val input = FateInputStream(file, littleEndian = false)
+        val input = KioInputStream(file, littleEndian = false)
         with(input) {
             if (readString(4) != "CPK ") log.fatal("No CPK magic string inside input file")
             val tocTable = createUtfTable(input, 0)
@@ -158,7 +158,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
     }
 
     private fun decompressLayla(fileBytes: ByteArray, extractSize: Int): ByteArray {
-        val input = FateInputStream(fileBytes)
+        val input = KioInputStream(fileBytes)
         if (input.readString(8) != "CRILAYLA") log.fatal("Not compressed using CRILAYLA")
         val sizeOrig = input.readInt()
         val sizeComp = input.readInt()
@@ -212,7 +212,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
         return combined.toByteArray()
     }
 
-    private fun createUtfTable(input: FateInputStream, initialOffset: Long): UtfTable = with(input) {
+    private fun createUtfTable(input: KioInputStream, initialOffset: Long): UtfTable = with(input) {
         val offset = initialOffset + 0x10
         setPos(offset)
         if (readString(4) != "@UTF") log.fatal("No UTF table at $offset")
@@ -238,7 +238,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
             schema.columnName = readInt()
 
             if (schema.type and COLUMN_STORAGE_MASK == COLUMN_STORAGE_CONSTANT) {
-                schema.constantOffset = longCount()
+                schema.constantOffset = longPos()
                 val typeFlag = schema.type and COLUMN_TYPE_MASK
                 when (typeFlag) {
                     COLUMN_TYPE_STRING -> readString(4)
@@ -259,7 +259,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
         return table
     }
 
-    private fun queryUtf(input: FateInputStream, table: UtfTable, index: Int, name: String): Any = with(input) {
+    private fun queryUtf(input: KioInputStream, table: UtfTable, index: Int, name: String): Any = with(input) {
         for (i in index until table.rows) {
             val widthOffset = i * table.rowWidth
             var rowOffset = table.tableOffset + 8 + table.rowsOffset + widthOffset
@@ -282,12 +282,12 @@ class CpkFile(val file: File, private val log: Log = Log()) {
                 } else {
                     setPos(dataOffset)
                     val typeFlag = schema.type and COLUMN_TYPE_MASK
-                    oldReadAddr = longCount()
+                    oldReadAddr = longPos()
                     when (typeFlag) {
                         COLUMN_TYPE_STRING -> {
                             val stringOffset = readInt()
                             setPos(table.baseOffset + stringOffset)
-                            value = readNullTerminatedString()
+                            value = readNullTerminatedString(Charsets.US_ASCII)
                             readBytes = 4L
                         }
                         COLUMN_TYPE_DATA -> {
@@ -326,7 +326,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
                 }
 
                 setPos(table.baseOffset + schema.columnName)
-                if (readNullTerminatedString() == name) {
+                if (readNullTerminatedString(Charsets.US_ASCII) == name) {
                     return value
                 }
             }
@@ -334,7 +334,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
         log.fatal("No UTF match")
     }
 
-    private fun patchUtf(input: FateInputStream, table: UtfTable, index: Int, name: String,
+    private fun patchUtf(input: KioInputStream, table: UtfTable, index: Int, name: String,
                          writer: (offset: Long) -> Unit) = with(input) {
         for (i in index until table.rows) {
             val widthOffset = i * table.rowWidth
@@ -358,45 +358,45 @@ class CpkFile(val file: File, private val log: Log = Log()) {
                 } else {
                     setPos(dataOffset)
                     val typeFlag = schema.type and COLUMN_TYPE_MASK
-                    oldReadAddr = longCount()
+                    oldReadAddr = longPos()
                     when (typeFlag) {
                         COLUMN_TYPE_STRING -> {
                             val stringOffset = readInt()
                             setPos(table.baseOffset + stringOffset)
-                            offset = longCount()
-                            readNullTerminatedString()
+                            offset = longPos()
+                            readNullTerminatedString(Charsets.US_ASCII)
                             readBytes = 4L
                         }
                         COLUMN_TYPE_DATA -> {
                             val varDataOffset = readInt()
                             val varDataSize = readInt()
                             setPos(table.baseOffset + varDataOffset)
-                            offset = longCount()
+                            offset = longPos()
                             readBytes(varDataSize)
                             readBytes = 8L
                         }
                         COLUMN_TYPE_FLOAT -> {
-                            offset = longCount()
+                            offset = longPos()
                             readFloat()
                             readBytes = 4L
                         }
                         COLUMN_TYPE_8BYTE, COLUMN_TYPE_8BYTE2 -> {
-                            offset = longCount()
+                            offset = longPos()
                             readLong()
                             readBytes = 8L
                         }
                         COLUMN_TYPE_4BYTE, COLUMN_TYPE_4BYTE2 -> {
-                            offset = longCount()
+                            offset = longPos()
                             readInt()
                             readBytes = 4L
                         }
                         COLUMN_TYPE_2BYTE, COLUMN_TYPE_2BYTE2 -> {
-                            offset = longCount()
+                            offset = longPos()
                             readShort()
                             readBytes = 2L
                         }
                         COLUMN_TYPE_1BYTE, COLUMN_TYPE_1BYTE2 -> {
-                            offset = longCount()
+                            offset = longPos()
                             readByte()
                             readBytes = 1L
                         }
@@ -409,7 +409,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
                 }
 
                 setPos(table.baseOffset + schema.columnName)
-                if (readNullTerminatedString() == name) {
+                if (readNullTerminatedString(Charsets.US_ASCII) == name) {
                     writer(offset)
                     return@with
                 }

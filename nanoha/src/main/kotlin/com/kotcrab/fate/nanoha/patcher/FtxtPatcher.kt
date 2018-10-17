@@ -18,11 +18,11 @@ package com.kotcrab.fate.nanoha.patcher
 
 import com.google.common.base.CharMatcher
 import com.google.common.io.BaseEncoding
-import com.kotcrab.fate.io.LERandomAccessFile
 import com.kotcrab.fate.nanoha.editor.core.TextEntry
-import com.kotcrab.fate.util.getSubArrayPos
-import com.kotcrab.fate.util.seek
-import com.kotcrab.fate.util.toUnsignedInt
+import kio.LERandomAccessFile
+import kio.util.getSubArrayPos
+import kio.util.seek
+import kio.util.toUnsignedInt
 import java.io.File
 
 /** @author Kotcrab */
@@ -97,7 +97,7 @@ class FtxtPatcher(private val srcAsmFile: File,
                                 else -> error("Unknown backslash escape sequence")
                             }
                         }
-                        CharMatcher.ASCII.matches(char) -> {
+                        CharMatcher.ascii().matches(char) -> {
                             writeByte(char.toInt())
                             writeByte(0x00)
                         }

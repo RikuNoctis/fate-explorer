@@ -16,9 +16,11 @@
 
 package com.kotcrab.fate.file.extra
 
-import com.kotcrab.fate.io.FateInputStream
+import com.kotcrab.fate.util.readDatString
+import kio.KioInputStream
 import java.io.File
 
+@Suppress("UNUSED_VARIABLE")
 /** @author Kotcrab */
 class ExtraInfoMatrixBinFile(dFile: File, tFile: File) {
     val entries = mutableListOf<ExtraInfoMatrixEntry>()
@@ -28,7 +30,7 @@ class ExtraInfoMatrixBinFile(dFile: File, tFile: File) {
         val texts = mutableListOf<String>()
         val shortcuts = mutableListOf<String>()
 
-        with(FateInputStream(dFile)) {
+        with(KioInputStream(dFile)) {
             val id = readInt()
             skip(0x50)
             repeat(3) {
@@ -43,7 +45,7 @@ class ExtraInfoMatrixBinFile(dFile: File, tFile: File) {
             }
             close()
         }
-        with(FateInputStream(tFile)) {
+        with(KioInputStream(tFile)) {
             val id = readInt()
             repeat(9) { _ ->
                 val text = readDatString(maintainStreamPos = true, fixUpNewLine = true)

@@ -16,7 +16,7 @@
 
 package com.kotcrab.fate.nanoha.editor.core
 
-import com.kotcrab.fate.util.walkDir
+import kio.util.walkDir
 import java.io.File
 import java.util.*
 

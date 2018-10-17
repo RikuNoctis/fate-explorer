@@ -16,7 +16,8 @@
 
 package com.kotcrab.fate.file.extra
 
-import com.kotcrab.fate.io.FateInputStream
+import com.kotcrab.fate.util.readDatString
+import kio.KioInputStream
 import java.io.File
 
 /**
@@ -30,14 +31,14 @@ class ExtraItemParam01BinFile(bytes: ByteArray, jpSize: Boolean) {
     init {
         val itemEntries = mutableListOf<ExtraItemParam01Entry>()
 
-        with(FateInputStream(bytes)) {
+        with(KioInputStream(bytes)) {
             val entries = readInt()
             readInt()
             readInt()
             readInt()
             repeat(entries) {
                 val entryBytes = readBytes(if (jpSize) 0xE4 else 0x100)
-                with(FateInputStream(entryBytes)) itemParse@{
+                with(KioInputStream(entryBytes)) itemParse@{
                     val name = readDatString(maintainStreamPos = true)
                     skip(if (jpSize) 0x54 else 0x54)
                     val buyValue = readInt()

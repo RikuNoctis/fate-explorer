@@ -21,12 +21,13 @@ import com.kotcrab.fate.nanoha.editor.app.APP_TITLE
 import com.kotcrab.fate.nanoha.editor.app.ReadOnlyStringConverter
 import com.kotcrab.fate.nanoha.editor.app.Styles.Companion.appScreen
 import com.kotcrab.fate.nanoha.editor.app.Styles.Companion.paddedLabel
-import com.kotcrab.fate.util.toHex
 import javafx.embed.swing.SwingFXUtils
 import javafx.scene.layout.Priority
 import javafx.stage.Modality
+import kio.util.toWHex
 import tornadofx.*
 
+/** @author Kotcrab */
 class TranslateScreen : View(APP_TITLE) {
     val controller: Controller by inject()
     val textEntry = controller.textEntry
@@ -101,7 +102,7 @@ class TranslateScreen : View(APP_TITLE) {
                 val glyphCount = controller.getGlyphCount(chapter)
                 textEntry.encodedText.value.forEach { glyphId ->
                     if (glyphId > glyphCount) {
-                        val stringRep = "\\x${glyphId.toHex()}"
+                        val stringRep = "\\x${glyphId.toWHex()}"
                         controlCodes.append(stringRep)
                         label(stringRep) {
                             style {

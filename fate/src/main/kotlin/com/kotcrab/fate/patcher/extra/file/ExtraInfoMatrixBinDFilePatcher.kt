@@ -16,10 +16,11 @@
 
 package com.kotcrab.fate.patcher.extra.file
 
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.io.FateOutputStream
 import com.kotcrab.fate.patcher.extra.ExtraTranslation
-import com.kotcrab.fate.util.WINDOWS_932
+import com.kotcrab.fate.util.writeDatString
+import kio.KioInputStream
+import kio.KioOutputStream
+import kio.util.WINDOWS_932
 import java.io.File
 import java.nio.charset.Charset
 
@@ -27,15 +28,15 @@ import java.nio.charset.Charset
 class ExtraInfoMatrixBinDFilePatcher(origBytes: ByteArray, outFile: File, translation: ExtraTranslation, translationOffset: Int,
                                      charset: Charset = Charsets.WINDOWS_932) {
     init {
-        val out = FateOutputStream(outFile)
+        val out = KioOutputStream(outFile)
         var entryCount = 0
-        with(FateInputStream(origBytes)) {
+        with(KioInputStream(origBytes)) {
             out.writeBytes(readBytes(0x54))
             repeat(3) {
                 val len = out.writeDatString(translation.getTranslation(entryCount, translationOffset),
                         charset = charset)
                 if (len > 0x20) error("Too long translation text")
-                out.writeBytes(0x20 - len)
+                out.writeNullBytes(0x20 - len)
                 entryCount++
                 entryCount++
                 entryCount++
@@ -45,13 +46,13 @@ class ExtraInfoMatrixBinDFilePatcher(origBytes: ByteArray, outFile: File, transl
                 val len = out.writeDatString(translation.getTranslation(entryCount, translationOffset),
                         charset = charset)
                 if (len > 0x80) error("Too long translation text")
-                out.writeBytes(0x80 - len)
+                out.writeNullBytes(0x80 - len)
                 entryCount++
                 entryCount++
                 entryCount++
                 skip(0x80)
             }
-            out.writeBytes(readBytes((size - longCount()).toInt()))
+            out.writeBytes(readBytes((size - longPos()).toInt()))
             close()
         }
         out.align(16)

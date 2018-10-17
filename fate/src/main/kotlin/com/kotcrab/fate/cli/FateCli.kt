@@ -31,7 +31,7 @@ import com.kotcrab.fate.file.extra.ExtraItemParam01BinFile
 import com.kotcrab.fate.file.extra.ExtraItemParam04BinFile
 import com.kotcrab.fate.patcher.CmpEncoder
 import com.kotcrab.fate.patcher.PakWriter
-import com.kotcrab.fate.util.*
+import kio.util.*
 import java.io.File
 import kotlin.reflect.KClass
 import kotlin.system.exitProcess

@@ -18,6 +18,7 @@ package com.kotcrab.fate.patcher
 
 import java.util.*
 
+/** @author Kotcrab */
 class BuildInfo {
     val modifiedPaks: MutableList<String> = Collections.synchronizedList(mutableListOf())
 }

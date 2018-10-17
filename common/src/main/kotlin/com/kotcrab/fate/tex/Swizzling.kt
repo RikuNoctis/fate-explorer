@@ -16,8 +16,8 @@
 
 package com.kotcrab.fate.tex
 
-import com.kotcrab.fate.io.SequentialArrayReader
-import com.kotcrab.fate.io.SequentialArrayWriter
+import kio.SequentialArrayReader
+import kio.SequentialArrayWriter
 import java.util.*
 
 /** @author Kotcrab */

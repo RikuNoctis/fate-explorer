@@ -16,10 +16,10 @@
 
 package com.kotcrab.fate.nanoha.file
 
-import com.kotcrab.fate.io.FateInputStream
 import com.kotcrab.fate.tex.ImageWriter
 import com.kotcrab.fate.tex.Swizzling
-import com.kotcrab.fate.util.toUnsignedInt
+import kio.KioInputStream
+import kio.util.toUnsignedInt
 import java.io.File
 
 /** @author Kotcrab */
@@ -30,7 +30,7 @@ class FntFile(bytes: ByteArray) {
     private lateinit var image: ImageWriter
 
     init {
-        with(FateInputStream(bytes)) {
+        with(KioInputStream(bytes)) {
             if (readStringAndTrim(4) != "FONT") error("Not a FONT file")
             val xadvanceSection = readInt()
             val paletteSection = readInt()
@@ -71,7 +71,7 @@ class FntFile(bytes: ByteArray) {
             val dataWidth = 512
             val swizzledBytes = readBytes(texDataSize)
             val unswizzledBytes = Swizzling.unswizzle4BPP(swizzledBytes, dataWidth, 600)
-            val texStream = FateInputStream(unswizzledBytes)
+            val texStream = KioInputStream(unswizzledBytes)
             image = ImageWriter(dataWidth, 600)
             repeat(texDataSize) {
                 val data = texStream.readByte().toUnsignedInt()

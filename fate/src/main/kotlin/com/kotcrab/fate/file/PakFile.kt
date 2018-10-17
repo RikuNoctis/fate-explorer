@@ -16,8 +16,8 @@
 
 package com.kotcrab.fate.file
 
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.util.padArray
+import kio.KioInputStream
+import kio.util.padArray
 import java.io.File
 import java.nio.file.Files
 
@@ -35,7 +35,7 @@ class PakFile(bytes: ByteArray) {
     init {
         val fileEntries = mutableListOf<PakFileEntry>()
 
-        with(FateInputStream(bytes)) {
+        with(KioInputStream(bytes)) {
             val filesCount = readShort().toInt()
             val pathIncluded = readShort() == 0x8000.toShort()
 
@@ -45,7 +45,7 @@ class PakFile(bytes: ByteArray) {
             }
 
             align(16)
-            headerSize = count()
+            headerSize = pos()
 
             repeat(filesCount) { index ->
                 val path = if (pathIncluded) readString(64).replace("\u0000", "") else ""

@@ -17,15 +17,15 @@
 package com.kotcrab.fate.nanoha.patcher
 
 import com.kotcrab.fate.file.HieroFile
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.io.LERandomAccessFile
-import com.kotcrab.fate.io.SequentialArrayReader
-import com.kotcrab.fate.io.SequentialArrayWriter
 import com.kotcrab.fate.nanoha.file.FntFile
 import com.kotcrab.fate.tex.ImageReader
-import com.kotcrab.fate.util.child
-import com.kotcrab.fate.util.seek
-import com.kotcrab.fate.util.toHex
+import kio.KioInputStream
+import kio.LERandomAccessFile
+import kio.SequentialArrayReader
+import kio.SequentialArrayWriter
+import kio.util.child
+import kio.util.seek
+import kio.util.toWHex
 import java.awt.Color
 import java.awt.Graphics2D
 import java.io.ByteArrayOutputStream
@@ -127,7 +127,7 @@ class MergeHieroFont(private val hieroDir: File, fontDir: File) {
             val glyphId = row * glyphRows + column
             charIdToGlyphIdMap[it.id] = row * glyphRows + column
             if (glyphId != it.id) {
-                println("Remapped char ID to glyph ID: ${it.id} -> $glyphId (0x${glyphId.toHex()})")
+                println("Remapped char ID to glyph ID: ${it.id} -> $glyphId (0x${glyphId.toWHex()})")
             }
             val targetX = column * glyphWidth
             var targetY = row * glyphHeight + it.yoffset
@@ -153,7 +153,7 @@ private class GearsFntMerge(val srcFnt: File, val pngFile: File, val hieroDefs: 
     private var texDataSize: Int = 0
 
     init {
-        with(FateInputStream(srcFnt)) {
+        with(KioInputStream(srcFnt)) {
             skip(0x4)
             glyphWidthSectPos = readInt()
             skip(0x4)
@@ -253,7 +253,7 @@ private class GearsFntMerge(val srcFnt: File, val pngFile: File, val hieroDefs: 
             seek(xadvSectPos + 169 * 0x2) //star
             writeByte(19)
 
-            println("Xadv ended at ${filePointer.toHex()}, used ${(filePointer - xadvSectPos).toHex()} bytes up to this point")
+            println("Xadv ended at ${filePointer.toWHex()}, used ${(filePointer - xadvSectPos).toWHex()} bytes up to this point")
             val xoffsetSectPos = texDataPos + 0x8000
             seek(xoffsetSectPos)
             hieroDefs.chars.forEach { char ->
@@ -272,7 +272,7 @@ private class GearsFntMerge(val srcFnt: File, val pngFile: File, val hieroDefs: 
             seek(xoffsetSectPos + 169 * 0x2) //star
             writeByte(0)
 
-            println("Xoffset ended at ${filePointer.toHex()}, used ${(filePointer - xadvSectPos).toHex()} bytes up to this point")
+            println("Xoffset ended at ${filePointer.toWHex()}, used ${(filePointer - xadvSectPos).toWHex()} bytes up to this point")
             val kerningSectPos = texDataPos + 0x8400
             seek(kerningSectPos)
             val extraKerningCount = 1
@@ -290,7 +290,7 @@ private class GearsFntMerge(val srcFnt: File, val pngFile: File, val hieroDefs: 
                 writeByte(secondGlyphId)
                 writeByte(firstGlyphId)
             }
-            println("Kerning ended at ${filePointer.toHex()}, used ${(filePointer - xadvSectPos).toHex()} bytes up to this point")
+            println("Kerning ended at ${filePointer.toWHex()}, used ${(filePointer - xadvSectPos).toWHex()} bytes up to this point")
 
             close()
         }

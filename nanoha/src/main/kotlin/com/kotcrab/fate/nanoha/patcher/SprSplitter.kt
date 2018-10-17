@@ -16,8 +16,8 @@
 
 package com.kotcrab.fate.nanoha.patcher
 
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.util.child
+import kio.KioInputStream
+import kio.util.child
 import java.io.File
 import javax.imageio.ImageIO
 
@@ -27,7 +27,7 @@ class SprSplitter(private val sprFile: File, private val pngFile: File) {
     fun splitTo(outDir: File) {
         val img = ImageIO.read(pngFile)
 
-        with(FateInputStream(sprFile)) {
+        with(KioInputStream(sprFile)) {
             setPos(0x24)
             while (true) {
                 val ptr = readInt()

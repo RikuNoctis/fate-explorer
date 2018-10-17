@@ -16,16 +16,16 @@
 
 package com.kotcrab.fate.nanoha.cli
 
-import com.kotcrab.fate.io.FateInputStream
 import com.kotcrab.fate.nanoha.acesISOUnpack
 import com.kotcrab.fate.nanoha.acesOutput
 import com.kotcrab.fate.nanoha.file.LzsFile
 import com.kotcrab.fate.nanoha.file.PacFile
 import com.kotcrab.fate.nanoha.gearsISOUnpack
 import com.kotcrab.fate.nanoha.gearsOutput
-import com.kotcrab.fate.util.child
-import com.kotcrab.fate.util.walkDir
-import com.kotcrab.fate.util.writeJson
+import kio.KioInputStream
+import kio.util.child
+import kio.util.walkDir
+import kio.util.writeJson
 import java.io.File
 
 /** @author Kotcrab */
@@ -49,7 +49,7 @@ private fun extractGamePackage(isoSrc: File, jsonOutDir: File, filesOutDir: File
         if (file.extension != "pac") return@walkDir
         PacFile(file).entries.forEach { entry ->
             files.getOrPut(entry.fileName, { mutableListOf() }).add(file.name)
-            with(FateInputStream(entry.bytes)) {
+            with(KioInputStream(entry.bytes)) {
                 val outFile = filesOutDir.child(entry.fileName)
                 val bytesToWrite = if (readStringAndTrim(4) == "LZS") {
                     val lzs = LzsFile(entry.bytes)

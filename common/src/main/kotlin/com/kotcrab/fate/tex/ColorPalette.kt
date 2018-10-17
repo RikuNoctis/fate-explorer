@@ -16,8 +16,8 @@
 
 package com.kotcrab.fate.tex
 
-import com.kotcrab.fate.util.mapValue
-import com.kotcrab.fate.util.toUnsignedInt
+import kio.util.mapValue
+import kio.util.toUnsignedInt
 import java.io.File
 
 /** @author Kotcrab */

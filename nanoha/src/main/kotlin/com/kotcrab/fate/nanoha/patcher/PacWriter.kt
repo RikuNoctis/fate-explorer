@@ -16,8 +16,9 @@
 
 package com.kotcrab.fate.nanoha.patcher
 
-import com.kotcrab.fate.io.FateOutputStream
 import com.kotcrab.fate.nanoha.file.PacFileEntry
+import com.kotcrab.fate.util.writeDatString
+import kio.KioOutputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -26,9 +27,9 @@ class PacWriter(private val pacEntries: List<PacFileEntry>) {
     fun writeToFile(out: File) {
         val entries = pacEntries.map { EntryIntermediate(it, -1, -1) }
 
-        val nameBytes = with(FateOutputStream(ByteArrayOutputStream())) {
+        val nameBytes = with(KioOutputStream(ByteArrayOutputStream())) {
             entries.forEach {
-                it.nameLocalPtr = count()
+                it.nameLocalPtr = pos()
                 writeDatString(it.entry.fileName)
             }
             align(0x10)
@@ -37,9 +38,9 @@ class PacWriter(private val pacEntries: List<PacFileEntry>) {
         }
 
 
-        val dataBytes = with(FateOutputStream(ByteArrayOutputStream())) {
+        val dataBytes = with(KioOutputStream(ByteArrayOutputStream())) {
             entries.forEach {
-                it.dataLocalPtr = count()
+                it.dataLocalPtr = pos()
                 writeBytes(it.entry.bytes)
                 align(0x10)
             }
@@ -48,7 +49,7 @@ class PacWriter(private val pacEntries: List<PacFileEntry>) {
         }
 
         val bs = ByteArrayOutputStream()
-        with(FateOutputStream(bs)) {
+        with(KioOutputStream(bs)) {
             val headerSize = 0x20 + 0x20 * pacEntries.size
             writeString("add", 4)
             writeInt(4) //version

@@ -22,8 +22,8 @@ import com.kotcrab.fate.nanoha.editor.core.TextEntryModel
 import com.kotcrab.fate.nanoha.editor.core.TranslationIO
 import com.kotcrab.fate.nanoha.editor.view.LoadingScreen
 import com.kotcrab.fate.nanoha.editor.view.TranslateScreen
-import com.kotcrab.fate.util.child
 import javafx.scene.control.ButtonType
+import kio.util.child
 import tornadofx.Controller
 import tornadofx.ItemViewModel
 import tornadofx.confirmation
@@ -31,6 +31,7 @@ import tornadofx.observable
 import java.awt.image.BufferedImage
 import java.io.File
 
+/** @author Kotcrab */
 class Controller : Controller() {
     private val mainScreen: TranslateScreen by inject()
     private val loadingScreen: LoadingScreen by inject()

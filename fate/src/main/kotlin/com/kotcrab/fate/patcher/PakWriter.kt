@@ -17,7 +17,7 @@
 package com.kotcrab.fate.patcher
 
 import com.kotcrab.fate.file.PakFileEntry
-import com.kotcrab.fate.io.FateOutputStream
+import kio.KioOutputStream
 import java.io.File
 
 /**
@@ -25,9 +25,9 @@ import java.io.File
  */
 class PakWriter(val entries: List<PakFileEntry>, val outFile: File) {
     init {
-        with(FateOutputStream(outFile)) {
-            writeShort(entries.size)
-            writeShort(0x8000) //paths included
+        with(KioOutputStream(outFile)) {
+            writeShort(entries.size.toShort())
+            writeShort(0x8000.toShort()) //paths included
 
             entries.forEach {
                 writeInt(it.bytes.size)

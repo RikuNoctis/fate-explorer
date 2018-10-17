@@ -16,11 +16,11 @@
 
 package com.kotcrab.fate.nanoha.patcher
 
-import com.kotcrab.fate.io.LERandomAccessFile
-import com.kotcrab.fate.io.SequentialArrayReader
-import com.kotcrab.fate.io.SequentialArrayWriter
 import com.kotcrab.fate.tex.ColorPalette
 import com.kotcrab.fate.tex.ImageReader
+import kio.LERandomAccessFile
+import kio.SequentialArrayReader
+import kio.SequentialArrayWriter
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.File

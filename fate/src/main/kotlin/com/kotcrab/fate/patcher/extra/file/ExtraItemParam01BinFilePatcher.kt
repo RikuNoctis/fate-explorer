@@ -17,24 +17,23 @@
 package com.kotcrab.fate.patcher.extra.file
 
 import com.kotcrab.fate.file.extra.ExtraItemParam01Entry
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.io.FateOutputStream
 import com.kotcrab.fate.patcher.extra.ExtraTranslation
-import com.kotcrab.fate.util.WINDOWS_932
+import com.kotcrab.fate.util.readDatString
+import kio.KioInputStream
+import kio.KioOutputStream
+import kio.util.WINDOWS_932
 import java.io.File
 import java.nio.charset.Charset
 
-/**
- * @author Kotcrab
- * */
+/** @author Kotcrab */
 class ExtraItemParam01BinFilePatcher(origBytes: ByteArray, outFile: File, translation: ExtraTranslation, translationOffset: Int,
                                      charset: Charset = Charsets.WINDOWS_932) {
 
     init {
-        val out = FateOutputStream(outFile)
+        val out = KioOutputStream(outFile)
         var entryCount = 0
 
-        with(FateInputStream(origBytes)) {
+        with(KioInputStream(origBytes)) {
             val entries = readInt()
             val u1 = readInt()
             val u2 = readInt()
@@ -47,7 +46,7 @@ class ExtraItemParam01BinFilePatcher(origBytes: ByteArray, outFile: File, transl
             repeat(entries) {
                 val origEntryBytes = readBytes(0x100)
                 var origEntry: ExtraItemParam01Entry? = null
-                with(FateInputStream(origEntryBytes)) itemParse@{
+                with(KioInputStream(origEntryBytes)) itemParse@{
                     val name = readDatString(maintainStreamPos = true, charset = charset)
                     skip(0x54)
                     val buyValue = readInt()
@@ -63,7 +62,7 @@ class ExtraItemParam01BinFilePatcher(origBytes: ByteArray, outFile: File, transl
                 if (origEntry!!.isUnused()) {
                     out.writeBytes(origEntryBytes)
                 } else {
-                    with(FateInputStream(origEntryBytes)) {
+                    with(KioInputStream(origEntryBytes)) {
                         run {
                             val newText = translation.getTranslation(entryCount, translationOffset)
                             entryCount++

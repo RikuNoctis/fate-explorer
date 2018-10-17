@@ -23,6 +23,7 @@ import javafx.geometry.Pos
 import javafx.scene.layout.Priority
 import tornadofx.*
 
+/** @author Kotcrab */
 class LoadingScreen : View(APP_TITLE) {
     private val controller: Controller by inject()
     private val status: TaskStatus by inject()

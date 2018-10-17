@@ -17,9 +17,9 @@
 package com.kotcrab.fate.file.extella
 
 import com.google.common.collect.Ordering
-import com.kotcrab.fate.io.FateInputStream
 import com.kotcrab.fate.util.Log
-import com.kotcrab.fate.util.child
+import kio.KioInputStream
+import kio.util.child
 import java.io.File
 import java.util.zip.Inflater
 
@@ -43,7 +43,7 @@ class PkFile(pkFile: File, outDir: File, val log: Log = Log()) {
         var pfsFileCount: Int = -1
 
         log.info("Reading file dictionary...")
-        with(FateInputStream(pfsFile, littleEndian = false)) {
+        with(KioInputStream(pfsFile, littleEndian = false)) {
             readInt()
             readInt()
             dirCount = readInt()
@@ -57,14 +57,14 @@ class PkFile(pkFile: File, outDir: File, val log: Log = Log()) {
                 pfsOffsetData.add(PfsOffsetEntry(readInt()))
             }
             repeat(dirCount + pfsFileCount) {
-                pfsNameData.add(PfsNameEntry(readNullTerminatedString()))
+                pfsNameData.add(PfsNameEntry(readNullTerminatedString(Charsets.US_ASCII)))
             }
             close()
         }
 
         log.info("Reading archive file map...")
         val pkhData = mutableListOf<PkhEntry>()
-        with(FateInputStream(pkhFile, littleEndian = false)) {
+        with(KioInputStream(pkhFile, littleEndian = false)) {
             val pkhFileCount = readInt()
             val orderCheck = Ordering.from<PkhEntry> { o1, o2 ->
                 Integer.compareUnsigned(o1.lowercasePathHash, o2.lowercasePathHash)
@@ -111,7 +111,7 @@ class PkFile(pkFile: File, outDir: File, val log: Log = Log()) {
 
         log.info("Extracting files...")
         pkhData.sortBy { it.pkOffset }
-        val pkArchive = FateInputStream(pkFile, littleEndian = false)
+        val pkArchive = KioInputStream(pkFile, littleEndian = false)
         var extractedFileCount = 0
         pfsDirData.forEach { entry ->
             val dir = extractedDirMap[entry.dirId]!!
@@ -162,7 +162,7 @@ class PkFile(pkFile: File, outDir: File, val log: Log = Log()) {
 
     private data class PkhEntry(val lowercasePathHash: Int, val pkOffset: Long, val decompressedSize: Int, val compressedSize: Int)
 
-    private fun FateInputStream.readIntUnsigned(): Long {
+    private fun KioInputStream.readIntUnsigned(): Long {
         return readInt().toLong() and 0xffffffffL
     }
 }

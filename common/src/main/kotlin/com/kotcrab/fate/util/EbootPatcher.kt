@@ -17,7 +17,9 @@
 package com.kotcrab.fate.util
 
 import com.kotcrab.fate.file.ElfFile
-import com.kotcrab.fate.io.FateInputStream
+import kio.KioInputStream
+import kio.util.arrayCopy
+import kio.util.toWHex
 import kmips.Assembler
 import kmips.Endianness
 import kmips.Reg
@@ -30,6 +32,7 @@ import java.nio.ByteOrder
 import java.util.*
 import javax.xml.bind.DatatypeConverter
 
+@Suppress("UNUSED_VARIABLE")
 /** @author Kotcrab */
 class EbootPatcher(inFile: File, outFile: File, patchList: List<EbootPatch>, baseProgramHeaderIdx: Int, relocationSectionHeaderIdx: Int) {
     init {
@@ -43,17 +46,17 @@ class EbootPatcher(inFile: File, outFile: File, patchList: List<EbootPatch>, bas
             if (patch.active == false) return@forEach
             patch.changes.forEach { change ->
                 if (nextProgramHeader != null && change.startAddr > nextProgramHeader.offset) {
-                    error("Trying to patch unsafe address: ${change.startAddr.toHex()}")
+                    error("Trying to patch unsafe address: ${change.startAddr.toWHex()}")
                 }
                 val patchBytes = DatatypeConverter.parseHexBinary(change.hexString)
                 arrayCopy(src = patchBytes, dest = outBytes, destPos = change.startAddr + baseProgramHeader.offset)
             }
             patch.relocationsToRemove.forEach relRemoveLoop@{ addrToRemove ->
-                with(FateInputStream(outBytes)) {
+                with(KioInputStream(outBytes)) {
                     setPos(relocationSectionHeader.offset)
-                    while (count() < relocationSectionHeader.offset + relocationSectionHeader.size) {
+                    while (pos() < relocationSectionHeader.offset + relocationSectionHeader.size) {
                         val addr = readInt()
-                        val typePos = count()
+                        val typePos = pos()
                         val type = readInt()
                         if (addr == addrToRemove) {
                             arrayCopy(src = ByteArray(4), dest = outBytes, destPos = typePos)
@@ -62,7 +65,7 @@ class EbootPatcher(inFile: File, outFile: File, patchList: List<EbootPatch>, bas
                         }
                     }
                 }
-                error("Can't remove relocation: ${addrToRemove.toHex()}, entry not found.")
+                error("Can't remove relocation: ${addrToRemove.toWHex()}, entry not found.")
             }
         }
         outFile.writeBytes(outBytes)
@@ -119,7 +122,7 @@ fun Assembler.float(value: Float) {
 
 fun Assembler.writeBytes(bytes: ByteArray) {
     if (bytes.size % 4 != 0) error("Buffer size is not aligned to word size")
-    with(FateInputStream(bytes)) {
+    with(KioInputStream(bytes)) {
         while (!eof()) {
             data(readInt())
         }

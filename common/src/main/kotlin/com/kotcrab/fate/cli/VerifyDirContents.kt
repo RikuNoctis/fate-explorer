@@ -17,7 +17,7 @@
 package com.kotcrab.fate.cli
 
 import com.google.common.io.Files
-import com.kotcrab.fate.util.relativizePath
+import kio.util.relativizePath
 import java.io.File
 import java.util.*
 import kotlin.system.exitProcess
@@ -39,7 +39,7 @@ class VerifyDirContents(in1: File, in2: File) {
         if (!in2.exists()) error("dir2 does not exist")
 
         println("Checking files, this may take a while...")
-        for (sourceFile in Files.fileTreeTraverser().preOrderTraversal(in1)) {
+        for (sourceFile in Files.fileTraverser().depthFirstPreOrder(in1)) {
             if (sourceFile.isDirectory) continue
 
             val relativePath = sourceFile.relativizePath(in1)

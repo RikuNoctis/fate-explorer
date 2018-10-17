@@ -17,10 +17,10 @@
 package com.kotcrab.fate.patcher.extra.file
 
 import com.kotcrab.fate.file.SjisEntry
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.io.FateOutputStream
 import com.kotcrab.fate.patcher.extra.ExtraTranslation
-import com.kotcrab.fate.util.WINDOWS_932
+import kio.KioInputStream
+import kio.KioOutputStream
+import kio.util.WINDOWS_932
 import java.io.EOFException
 import java.io.File
 import java.nio.charset.Charset
@@ -30,10 +30,10 @@ class ExtraSjisFilePatcher(origBytes: ByteArray, origJpBytes: ByteArray,
                            outFile: File, translation: ExtraTranslation, translationOffset: Int,
                            charset: Charset = Charsets.WINDOWS_932) {
     init {
-        val out = FateOutputStream(outFile)
+        val out = KioOutputStream(outFile)
         var entryCount = 0
-        val jpIn = FateInputStream(origJpBytes)
-        with(FateInputStream(origBytes)) {
+        val jpIn = KioInputStream(origJpBytes)
+        with(KioInputStream(origBytes)) {
             while (!eof()) {
                 try {
                     val l1 = readNullTerminatedString(charset)

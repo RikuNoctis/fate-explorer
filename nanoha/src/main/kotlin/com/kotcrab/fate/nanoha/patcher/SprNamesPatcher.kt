@@ -16,8 +16,8 @@
 
 package com.kotcrab.fate.nanoha.patcher
 
-import com.kotcrab.fate.io.LERandomAccessFile
-import com.kotcrab.fate.util.seek
+import kio.LERandomAccessFile
+import kio.util.seek
 import java.io.File
 
 /** @author Kotcrab */

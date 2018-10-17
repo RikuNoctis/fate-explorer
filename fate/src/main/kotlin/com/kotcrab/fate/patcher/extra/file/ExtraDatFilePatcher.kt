@@ -16,11 +16,11 @@
 
 package com.kotcrab.fate.patcher.extra.file
 
-import com.kotcrab.fate.io.FateOutputStream
-import com.kotcrab.fate.io.LERandomAccessFile
-import com.kotcrab.fate.io.align
-import com.kotcrab.fate.io.writeDatString
 import com.kotcrab.fate.patcher.extra.ExtraTranslation
+import com.kotcrab.fate.util.writeDatString
+import kio.KioOutputStream
+import kio.LERandomAccessFile
+import kio.util.align
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -46,8 +46,8 @@ class ExtraDatFilePatcher(origBytes: ByteArray, outFile: File, translation: Extr
             }
             val en = translation.getTranslation(tnIndex)
             if (en != it.enEntry.text) {
-                val enByteLen = FateOutputStream(ByteArrayOutputStream()).writeDatString(en)
-                val origByteLen = FateOutputStream(ByteArrayOutputStream()).writeDatString(it.enEntry.text)
+                val enByteLen = KioOutputStream(ByteArrayOutputStream()).writeDatString(en)
+                val origByteLen = KioOutputStream(ByteArrayOutputStream()).writeDatString(it.enEntry.text)
                 if (enByteLen <= origByteLen) {
                     raf.seek(it.enEntry.textLoc.toLong())
                     raf.writeDatString(en)

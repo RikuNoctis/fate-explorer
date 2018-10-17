@@ -17,9 +17,9 @@
 package com.kotcrab.fate.nanoha.editor.core
 
 import com.google.gson.GsonBuilder
-import com.kotcrab.fate.util.child
-import com.kotcrab.fate.util.fromJson
-import com.kotcrab.fate.util.relativizePath
+import kio.util.child
+import kio.util.fromJson
+import kio.util.relativizePath
 import tornadofx.ItemViewModel
 import java.io.File
 

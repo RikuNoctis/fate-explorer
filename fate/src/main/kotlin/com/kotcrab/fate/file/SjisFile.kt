@@ -16,8 +16,8 @@
 
 package com.kotcrab.fate.file
 
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.util.WINDOWS_932
+import kio.KioInputStream
+import kio.util.WINDOWS_932
 import java.io.EOFException
 import java.io.File
 
@@ -28,7 +28,7 @@ class SjisFile(bytes: ByteArray) {
     val entries = mutableListOf<SjisEntry>()
 
     init {
-        with(FateInputStream(bytes)) {
+        with(KioInputStream(bytes)) {
             while (!eof()) {
                 try {
                     val l1 = readNullTerminatedString(Charsets.WINDOWS_932)

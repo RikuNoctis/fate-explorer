@@ -16,14 +16,16 @@
 
 package com.kotcrab.fate.nanoha.cli
 
-import com.kotcrab.fate.io.FateInputStream
 import com.kotcrab.fate.nanoha.acesOutput
 import com.kotcrab.fate.util.ScriptEditorEntry
 import com.kotcrab.fate.util.ScriptEditorFilesWriter
-import com.kotcrab.fate.util.WINDOWS_932
-import com.kotcrab.fate.util.child
+import kio.KioInputStream
+import kio.util.WINDOWS_932
+import kio.util.child
 import java.io.File
 import java.nio.charset.Charset
+
+/** @author Kotcrab */
 
 fun main(args: Array<String>) {
     EbootTextDump(acesOutput.child("UTF8.bin"), Charsets.UTF_8, "eboot")
@@ -34,7 +36,7 @@ fun main(args: Array<String>) {
 class EbootTextDump(srcBin: File, charset: Charset, outDirName: String) {
     init {
         val entries = mutableListOf<ScriptEditorEntry>()
-        with(FateInputStream(srcBin)) {
+        with(KioInputStream(srcBin)) {
             while (!eof()) {
                 skipNullBytes()
                 if (eof()) break

@@ -16,8 +16,9 @@
 
 package com.kotcrab.fate.file
 
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.util.WINDOWS_932
+import com.kotcrab.fate.util.readDatString
+import kio.KioInputStream
+import kio.util.WINDOWS_932
 import java.io.File
 import java.nio.charset.Charset
 
@@ -26,7 +27,7 @@ class FixedSizeTextBinFile(file: File, charset: Charset = Charsets.WINDOWS_932) 
     val entries = mutableListOf<Pair<Int, String>>()
 
     init {
-        with(FateInputStream(file)) {
+        with(KioInputStream(file)) {
             val entryCount = readInt()
             readInt()
             repeat(entryCount) {
@@ -39,4 +40,3 @@ class FixedSizeTextBinFile(file: File, charset: Charset = Charsets.WINDOWS_932) 
         }
     }
 }
-

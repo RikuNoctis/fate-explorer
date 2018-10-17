@@ -16,7 +16,7 @@
 
 package com.kotcrab.fate.file.extella
 
-import com.kotcrab.fate.util.toUnsignedInt
+import kio.util.toUnsignedInt
 
 /** @author Kotcrab */
 object PkCrc32 {

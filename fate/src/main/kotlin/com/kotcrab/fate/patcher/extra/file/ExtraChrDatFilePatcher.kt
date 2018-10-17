@@ -16,11 +16,15 @@
 
 package com.kotcrab.fate.patcher.extra.file
 
-import com.kotcrab.fate.io.*
 import com.kotcrab.fate.patcher.extra.ExtraTranslation
-import com.kotcrab.fate.util.WINDOWS_932
-import com.kotcrab.fate.util.getSubArrayPos
-import com.kotcrab.fate.util.toHex
+import com.kotcrab.fate.util.writeDatString
+import kio.KioInputStream
+import kio.KioOutputStream
+import kio.LERandomAccessFile
+import kio.util.WINDOWS_932
+import kio.util.align
+import kio.util.getSubArrayPos
+import kio.util.toWHex
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.charset.Charset
@@ -37,8 +41,8 @@ class ExtraChrDatFilePatcher(origBytes: ByteArray, outFile: File, translation: E
             val en = translation.getTranslation(offset, translationOffset)
             val origEn = origTranslation.getTranslation(offset, translationOffset)
             if (en != origEn) {
-                val enByteLen = FateOutputStream(ByteArrayOutputStream()).writeDatString(en, charset = charset)
-                val origByteLen = FateOutputStream(ByteArrayOutputStream()).writeDatString(origEn, charset = charset)
+                val enByteLen = KioOutputStream(ByteArrayOutputStream()).writeDatString(en, charset = charset)
+                val origByteLen = KioOutputStream(ByteArrayOutputStream()).writeDatString(origEn, charset = charset)
                 if (enByteLen <= origByteLen) {
                     raf.seek(getSubArrayPos(origBytes, origEn.toByteArray()).toLong())
                     raf.writeDatString(en, charset = charset)
@@ -46,9 +50,9 @@ class ExtraChrDatFilePatcher(origBytes: ByteArray, outFile: File, translation: E
                     val pos = getSubArrayPos(origBytes, origEn.toByteArray())
                     if (pos == -1) error("$origEn not found")
                     var written = false
-                    with(FateInputStream(origBytes)) {
+                    with(KioInputStream(origBytes)) {
                         while (!eof()) {
-                            val pointerPos = count()
+                            val pointerPos = pos()
                             if (readInt() == pos) {
                                 var attachedPointer = attachedTextMap[en]
                                 if (attachedPointer == null) {
@@ -60,7 +64,7 @@ class ExtraChrDatFilePatcher(origBytes: ByteArray, outFile: File, translation: E
                                 raf.seek(pointerPos.toLong())
                                 raf.writeInt(attachedPointer.toInt())
                                 if (written) {
-                                    println("TN WARN: Written in-dungeon twice: at ${pointerPos.toHex()}, $en")
+                                    println("TN WARN: Written in-dungeon twice: at ${pointerPos.toWHex()}, $en")
                                 }
                                 written = true
                             }

@@ -16,10 +16,10 @@
 
 package com.kotcrab.fate.tex
 
-import com.kotcrab.fate.util.child
-import com.kotcrab.fate.util.execute
-import com.kotcrab.fate.util.relativizePath
-import com.kotcrab.fate.util.walkDir
+import kio.util.child
+import kio.util.execute
+import kio.util.relativizePath
+import kio.util.walkDir
 import java.io.File
 
 /** @author Kotcrab */

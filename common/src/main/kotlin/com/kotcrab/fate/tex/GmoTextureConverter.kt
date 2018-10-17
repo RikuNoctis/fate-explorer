@@ -16,8 +16,8 @@
 
 package com.kotcrab.fate.tex
 
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.util.*
+import kio.KioInputStream
+import kio.util.*
 import java.io.File
 
 /** @author Kotcrab */
@@ -35,7 +35,7 @@ class GmoTextureConverter(private val gimConvExe: File,
             if (fileFilter(it)) {
                 println("Processing ${it.relativizePath(srcDir)}")
                 val gmoBytes = it.readBytes()
-                val gmoInput = FateInputStream(gmoBytes)
+                val gmoInput = KioInputStream(gmoBytes)
                 val textures = mutableListOf<ByteArray>()
                 var startFrom = 0
                 while (true) {
@@ -44,7 +44,7 @@ class GmoTextureConverter(private val gimConvExe: File,
                     gmoInput.setPos(texPos - 0x4)
                     val texSize = gmoInput.readInt()
                     textures.add(gmoInput.readBytes(texSize))
-                    startFrom = gmoInput.count()
+                    startFrom = gmoInput.pos()
                 }
                 println("Found ${textures.size} textures")
                 textures.forEachIndexed { index, bytes ->

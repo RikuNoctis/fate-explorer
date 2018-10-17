@@ -16,10 +16,10 @@
 
 package com.kotcrab.fate.nanoha.file
 
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.io.SequentialArrayReader
-import com.kotcrab.fate.io.SequentialArrayWriter
-import com.kotcrab.fate.util.toUnsignedInt
+import kio.KioInputStream
+import kio.SequentialArrayReader
+import kio.SequentialArrayWriter
+import kio.util.toUnsignedInt
 import java.io.File
 
 /** @author Kotcrab */
@@ -32,7 +32,7 @@ class LzsFile(bytes: ByteArray) {
         private set
 
     init {
-        with(FateInputStream(bytes)) {
+        with(KioInputStream(bytes)) {
             if (readStringAndTrim(4) != "LZS") error("Not a LZS file")
             readInt() //always 0x80505
             val offset = readInt()
@@ -41,7 +41,7 @@ class LzsFile(bytes: ByteArray) {
             val fileSize = readInt()
             readInt() //always 0x0200
             skip(4)
-            fileName = readNullTerminatedString()
+            fileName = readNullTerminatedString(Charsets.US_ASCII)
 
             setPos(dictOffset)
             val dictSize = fileSize - dictOffset

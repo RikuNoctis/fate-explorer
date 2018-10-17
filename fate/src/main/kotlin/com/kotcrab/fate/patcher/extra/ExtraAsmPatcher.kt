@@ -19,13 +19,18 @@ package com.kotcrab.fate.patcher.extra
 import com.kotcrab.fate.file.PakFile
 import com.kotcrab.fate.file.replaceEntry
 import com.kotcrab.fate.file.sizeInGame
-import com.kotcrab.fate.util.*
+import com.kotcrab.fate.util.EbootPatch
+import com.kotcrab.fate.util.patch
+import com.kotcrab.fate.util.preserve
+import kio.util.child
+import kio.util.toWHex
 import kmips.Label
 import kmips.Reg.*
 import kmips.assembleAsHexString
 import java.io.File
 import javax.xml.bind.DatatypeConverter
 
+/** @author Kotcrab */
 class ExtraAsmPatcher {
     val bootPatches = mutableListOf<EbootPatch>()
     lateinit var extraPatchBytes: ByteArray
@@ -52,17 +57,17 @@ class ExtraAsmPatcher {
         if (debugDumpPreloadContent) {
             var fileAddress = baseLoadAddress
             pakEntries.forEach {
-                println("${it.path} ${fileAddress.toHex()}")
+                println("${it.path} ${fileAddress.toWHex()}")
                 fileAddress += 0x40 + it.bytes.size
             }
-            println("Next file at ${fileAddress.toHex()}")
+            println("Next file at ${fileAddress.toWHex()}")
         }
 
         val preloadInjectStart = baseLoadAddress + pakEntries.sizeInGame()
-        println("Calculated that patch will be placed at ${preloadInjectStart.toHex()}")
+        println("Calculated that patch will be placed at ${preloadInjectStart.toWHex()}")
         println("Second patcher run...")
         val patchStart = preloadInjectStart + 0x40
-        println("Code will start at ${patchStart.toHex()}")
+        println("Code will start at ${patchStart.toWHex()}")
         val extraPatch = createPreloadCodePatch(patchStart)
 
         val patchBytes = mutableListOf<Byte>()

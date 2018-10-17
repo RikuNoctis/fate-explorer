@@ -16,11 +16,11 @@
 
 package com.kotcrab.fate.nanoha.file
 
-import com.kotcrab.fate.io.FateInputStream
 import com.kotcrab.fate.tex.ColorPalette
 import com.kotcrab.fate.tex.ImageWriter
 import com.kotcrab.fate.tex.Swizzling
-import com.kotcrab.fate.util.toUnsignedInt
+import kio.KioInputStream
+import kio.util.toUnsignedInt
 import java.io.File
 
 /** @author Kotcrab */
@@ -33,7 +33,7 @@ class Tim2File(bytes: ByteArray) {
     constructor(file: File) : this(file.readBytes())
 
     init {
-        with(FateInputStream(bytes)) {
+        with(KioInputStream(bytes)) {
             if (readStringAndTrim(4) != "TIM2") error("Not A TIM2 file")
             readInt()
             readInt()
@@ -93,7 +93,7 @@ class Tim2File(bytes: ByteArray) {
                 }
                 val palette = ColorPalette(readBytes(4 * 16), ColorPalette.Mode.RGBA8888)
 
-                val texStream = FateInputStream(unswizzledBytes)
+                val texStream = KioInputStream(unswizzledBytes)
                 image = ImageWriter(width, height)
                 repeat(pixelDataSize) {
                     val data = texStream.readByte().toUnsignedInt()
@@ -109,7 +109,7 @@ class Tim2File(bytes: ByteArray) {
                 val unswizzledBytes = Swizzling.unswizzle8BPP(swizzledBytes, width, height)
                 val palette = ColorPalette(readBytes(4 * 256), ColorPalette.Mode.RGBA8888)
 
-                val texStream = FateInputStream(unswizzledBytes)
+                val texStream = KioInputStream(unswizzledBytes)
                 image = ImageWriter(width, height)
                 repeat(pixelDataSize) {
                     val pixel = texStream.readByte().toUnsignedInt()

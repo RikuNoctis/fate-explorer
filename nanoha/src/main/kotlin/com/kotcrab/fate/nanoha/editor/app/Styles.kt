@@ -18,6 +18,7 @@ package com.kotcrab.fate.nanoha.editor.app
 
 import tornadofx.*
 
+/** @author Kotcrab */
 class Styles : Stylesheet() {
     companion object {
         val hbox by csselement("HBox")

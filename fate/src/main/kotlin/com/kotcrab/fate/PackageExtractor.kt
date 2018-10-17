@@ -19,7 +19,7 @@ package com.kotcrab.fate
 import com.kotcrab.fate.file.CmpFile
 import com.kotcrab.fate.file.PakFile
 import com.kotcrab.fate.util.Log
-import com.kotcrab.fate.util.readableFileSize
+import kio.util.readableFileSize
 import java.io.File
 import java.util.*
 
@@ -92,4 +92,3 @@ class PackageExtractor(srcDir: File, outDir: File, log: Log = Log()) {
         log.info("Done")
     }
 }
-

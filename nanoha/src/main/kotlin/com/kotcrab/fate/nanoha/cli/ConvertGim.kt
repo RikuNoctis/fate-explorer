@@ -18,7 +18,7 @@ package com.kotcrab.fate.nanoha.cli
 
 import com.kotcrab.fate.nanoha.*
 import com.kotcrab.fate.tex.GimTextureConverter
-import com.kotcrab.fate.util.child
+import kio.util.child
 
 /** @author Kotcrab */
 fun main(args: Array<String>) {

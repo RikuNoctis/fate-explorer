@@ -19,8 +19,9 @@ package com.kotcrab.fate.nanoha.cli
 import com.kotcrab.fate.nanoha.file.Tim2File
 import com.kotcrab.fate.nanoha.gearsOutput
 import com.kotcrab.fate.nanoha.gearsPACUnpack
-import com.kotcrab.fate.util.child
+import kio.util.child
 
+/** @author Kotcrab */
 fun main(args: Array<String>) {
     val out = gearsOutput.child("textm2")
     out.mkdirs()

@@ -17,13 +17,15 @@
 package com.kotcrab.fate.nanoha.patcher
 
 import com.google.common.io.BaseEncoding
-import com.kotcrab.fate.io.FateInputStream
 import com.kotcrab.fate.nanoha.editor.core.TextEntry
 import com.kotcrab.fate.nanoha.file.PacFile
 import com.kotcrab.fate.nanoha.file.PacFileEntry
 import com.kotcrab.fate.nanoha.file.Tim2File
 import com.kotcrab.fate.nanoha.gearsPatch
-import com.kotcrab.fate.util.*
+import com.kotcrab.fate.util.EbootPatcher
+import com.kotcrab.fate.util.appendLine
+import kio.KioInputStream
+import kio.util.*
 import org.apache.commons.exec.PumpStreamHandler
 import java.io.File
 import java.io.RandomAccessFile
@@ -235,14 +237,14 @@ class GearsPatcher {
                 .filter { it[1].startsWith(pathPrefix) }
                 .map { LbaEntry(it[1].removePrefix(pathPrefix), it[0].toInt()) }
                 .associateBy({ it.extent }, { it })
-        with(FateInputStream(isoSrcDir.child("PSP_GAME/USRDIR/sound_lba_size.bin"))) {
+        with(KioInputStream(isoSrcDir.child("PSP_GAME/USRDIR/sound_lba_size.bin"))) {
             setPos(0xC0)
             while (!eof()) {
-                val pos = count()
+                val pos = pos()
                 val extent = readInt()
                 readInt()
                 if (extent == 0) continue
-                val entry = soundFiles[extent] ?: error("No matching entry for extent at ${pos.toHex()}")
+                val entry = soundFiles[extent] ?: error("No matching entry for extent at ${pos.toWHex()}")
                 entry.soundLbaSizeEntryPos = pos
             }
             close()
@@ -251,12 +253,12 @@ class GearsPatcher {
             error("Unassigned soundLbaSizeEntryPos in LbaEntry found")
         }
 
-        with(FateInputStream(outIso, littleEndian = false)) {
+        with(KioInputStream(outIso, littleEndian = false)) {
             val startPos = 0x1AFD0
             val endPos = 0x6C000
             setPos(startPos)
-            while (count() < endPos) {
-                val pos = count()
+            while (pos() < endPos) {
+                val pos = pos()
                 val len = readByte().toUnsignedInt()
                 if (len == 0) {
                     skipNullBytes()
@@ -266,7 +268,7 @@ class GearsPatcher {
                 skip(0x5)
                 val newExtent = readInt()
                 skip(0x17)
-                val fileName = readNullTerminatedString()
+                val fileName = readNullTerminatedString(Charsets.US_ASCII)
                 soundFiles.values.firstOrNull { it.fileName == fileName }?.newExtent = newExtent
                 setPos(nextEntry)
             }
@@ -278,7 +280,7 @@ class GearsPatcher {
         println("Writing new extents...")
         soundFiles.values.forEach { lbaEntry ->
             isoRaf.seek(soundLbaFilePos + lbaEntry.soundLbaSizeEntryPos)
-            isoRaf.writeInt(lbaEntry.newExtent.toLittleEndian())
+            isoRaf.writeInt(lbaEntry.newExtent.swapBytes())
         }
     }
 
@@ -302,10 +304,10 @@ class GearsPatcher {
         val extentLoc = mutableMapOf<String, Long>()
         with(iso) {
             seek(indexFilePos)
-            with(FateInputStream(readBytes(0x5DC0))) {
+            with(KioInputStream(readBytes(0x5DC0))) {
                 while (!eof()) {
                     val fileName = readStringAndTrim(0x20)
-                    extentLoc[fileName] = indexFilePos + count()
+                    extentLoc[fileName] = indexFilePos + pos()
                     skip(0x8)
                 }
             }
@@ -330,7 +332,7 @@ class GearsPatcher {
                 val fileName = readNullTerminatedString()
                 extentLoc[fileName]?.run {
                     seek(this)
-                    writeInt(newExtent.toLittleEndian())
+                    writeInt(newExtent.swapBytes())
                 }
                 seek(nextEntry)
             }

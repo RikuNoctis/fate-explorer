@@ -16,10 +16,12 @@
 
 package com.kotcrab.fate.patcher.extra.file
 
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.io.FateOutputStream
 import com.kotcrab.fate.patcher.extra.ExtraTranslation
-import com.kotcrab.fate.util.WINDOWS_932
+import com.kotcrab.fate.util.readDatString
+import com.kotcrab.fate.util.writeDatString
+import kio.KioInputStream
+import kio.KioOutputStream
+import kio.util.WINDOWS_932
 import java.io.File
 import java.nio.charset.Charset
 
@@ -27,8 +29,8 @@ import java.nio.charset.Charset
 class ExtraIndexedTextBinFilePatcher(origBytes: ByteArray, outFile: File, translation: ExtraTranslation, translationOffset: Int,
                                      charset: Charset = Charsets.WINDOWS_932) {
     init {
-        val out = FateOutputStream(outFile)
-        with(FateInputStream(origBytes)) {
+        val out = KioOutputStream(outFile)
+        with(KioInputStream(origBytes)) {
             var entryCount = 0
             while (true) {
                 val index = readInt()

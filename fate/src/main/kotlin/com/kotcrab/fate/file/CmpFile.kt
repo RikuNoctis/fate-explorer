@@ -16,9 +16,9 @@
 
 package com.kotcrab.fate.file
 
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.util.getBits
-import com.kotcrab.fate.util.toUnsignedInt
+import kio.KioInputStream
+import kio.util.getBits
+import kio.util.toUnsignedInt
 import java.io.File
 
 /**
@@ -29,7 +29,7 @@ class CmpFile(file: File) {
     private lateinit var data: DecodedData
 
     init {
-        with(FateInputStream(file)) {
+        with(KioInputStream(file)) {
             if (readString(4) != "IECP") error("Not a CMP file.")
 
             val decompressedSize = readInt()

@@ -16,10 +16,11 @@
 
 package com.kotcrab.fate.patcher.extra.file
 
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.io.FateOutputStream
 import com.kotcrab.fate.patcher.extra.ExtraTranslation
-import com.kotcrab.fate.util.WINDOWS_932
+import com.kotcrab.fate.util.writeDatString
+import kio.KioInputStream
+import kio.KioOutputStream
+import kio.util.WINDOWS_932
 import java.io.File
 import java.nio.charset.Charset
 
@@ -27,9 +28,9 @@ import java.nio.charset.Charset
 class ExtraInfoMatrixBinTFilePatcher(origBytes: ByteArray, outFile: File, translation: ExtraTranslation, translationOffset: Int,
                                      charset: Charset = Charsets.WINDOWS_932) {
     init {
-        val out = FateOutputStream(outFile)
+        val out = KioOutputStream(outFile)
         var entryCount = 0
-        with(FateInputStream(origBytes)) {
+        with(KioInputStream(origBytes)) {
             out.writeInt(readInt())
             repeat(9) {
                 entryCount++
@@ -37,7 +38,7 @@ class ExtraInfoMatrixBinTFilePatcher(origBytes: ByteArray, outFile: File, transl
                 val len = out.writeDatString(translation.getTranslation(entryCount, translationOffset),
                         charset = charset)
                 if (len > 0x1400) error("Too long translation text")
-                out.writeBytes(0x1400 - len)
+                out.writeNullBytes(0x1400 - len)
                 entryCount++
             }
             entryCount = 0
@@ -46,7 +47,7 @@ class ExtraInfoMatrixBinTFilePatcher(origBytes: ByteArray, outFile: File, transl
                 val len = out.writeDatString(translation.getTranslation(entryCount, translationOffset),
                         charset = charset)
                 if (len > 0x44) error("Too long translation text")
-                out.writeBytes(0x44 - len)
+                out.writeNullBytes(0x44 - len)
                 entryCount++
                 entryCount++
             }

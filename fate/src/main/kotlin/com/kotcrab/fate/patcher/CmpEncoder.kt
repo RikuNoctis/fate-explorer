@@ -16,9 +16,9 @@
 
 package com.kotcrab.fate.patcher
 
-import com.kotcrab.fate.io.FateInputStream
-import com.kotcrab.fate.io.FateOutputStream
-import com.kotcrab.fate.util.setBit
+import kio.KioInputStream
+import kio.KioOutputStream
+import kio.util.setBit
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -37,10 +37,10 @@ class CmpEncoder(file: File, secondPass: Boolean) {
         val dict = Dictionary(secondPass)
         var flag: Byte = 0
         var flagPos = 0
-        var buffer = FateOutputStream(ByteArrayOutputStream())
-        var dataBuffer = FateOutputStream(ByteArrayOutputStream())
+        var buffer = KioOutputStream(ByteArrayOutputStream())
+        var dataBuffer = KioOutputStream(ByteArrayOutputStream())
 
-        val out = FateOutputStream(outStream)
+        val out = KioOutputStream(outStream)
         out.writeString("IECP", 4)
         out.writeInt(file.length().toInt())
 
@@ -49,7 +49,7 @@ class CmpEncoder(file: File, secondPass: Boolean) {
             out.writeBytes(dataBuffer.getAsByteArrayOutputStream().toByteArray())
             flag = 0
             flagPos = 0
-            dataBuffer = FateOutputStream(ByteArrayOutputStream())
+            dataBuffer = KioOutputStream(ByteArrayOutputStream())
         }
 
         fun writePair(pairBytes: ByteArray, setFlagBit: Boolean) {
@@ -63,7 +63,7 @@ class CmpEncoder(file: File, secondPass: Boolean) {
             }
         }
 
-        with(FateInputStream(file)) {
+        with(KioInputStream(file)) {
             while (!eof()) {
                 val byte = readByte()
                 buffer.writeByte(byte)
@@ -76,7 +76,7 @@ class CmpEncoder(file: File, secondPass: Boolean) {
                             writePair(byteArrayOf(bufByte), true)
                             dict.write(bufByte)
                         }
-                        buffer = FateOutputStream(ByteArrayOutputStream())
+                        buffer = KioOutputStream(ByteArrayOutputStream())
                     } else {
                         //write coded pair
                         val bufToWrite = bufferBytes.sliceArray(0 until bufferBytes.lastIndex)
@@ -87,8 +87,8 @@ class CmpEncoder(file: File, secondPass: Boolean) {
                         val c2 = (codedPair and 0xFF).toByte()
                         writePair(byteArrayOf(c1, c2), false)
                         bufToWrite.forEach { bufByte -> dict.write(bufByte) }
-                        setPos(count() - 1)
-                        buffer = FateOutputStream(ByteArrayOutputStream())
+                        setPos(pos() - 1)
+                        buffer = KioOutputStream(ByteArrayOutputStream())
                     }
                 }
             }
