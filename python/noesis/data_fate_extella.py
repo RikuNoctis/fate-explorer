@@ -105,6 +105,8 @@ def fateGetPlatformImpl(bs, meshOffset, gprOffset):
         return Dx11Impl()
     elif platform == "GXM":
         return GxmImpl(extellaLinkMode)
+    elif platform == "NX":
+        return NxImpl()
     else:
         raise ValueError("Unsupported platform: " + platform)
 
@@ -215,13 +217,16 @@ class Mesh:
                     texNormalizedName = path.splitext(path.basename(texPath))[0]
                     texFinalPath = rapi.getDirForFilePath(rapi.getInputName()) + texNormalizedName + extension
                     if rapi.checkFileExists(texFinalPath):  # check in current dir first
+                        dlog("Tex in current: " + texFinalPath)
                         return texFinalPath, texNormalizedName
 
                     # resource/target/win
                     baseResFolder = path.dirname(path.abspath(rapi.getDirForFilePath(rapi.getInputName())))
                     texFinalPath = path.join(path.join(baseResFolder, "mdltex"), texNormalizedName) + extension
                     if rapi.checkFileExists(texFinalPath):
+                        dlog("Tex from ../mdltex: " + texFinalPath)
                         return texFinalPath, texNormalizedName
+                    dlog("Tex not found: " + texFinalPath)
                     return None, None
 
                 texFinalPath, texNormalizedName = getTexPath(impl.getTexExtensions()[0])
@@ -665,6 +670,13 @@ class Dx11Impl:
     def needsOptimize(self):
         return optimizeDx11Models
 
+
+class NxImpl(Dx11Impl):
+    def getTexExtensions(self):
+        return [".mntx", ".bntx"]
+
+    def getTexHandlerName(self):
+        return ".bntx"
 
 # Helpers
 
