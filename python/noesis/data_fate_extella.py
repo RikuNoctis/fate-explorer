@@ -1,7 +1,6 @@
 # Noesis loader for Fate/Extella .mdl files
 # Supports:
-# - Fate/Extella (PC)
-# - Fate/Extella (PS Vita)
+# - Fate/Extella (PC, PS Vita and Switch)
 # - Fate/Extella Link (PS Vita)
 
 # ---- Script config ----
