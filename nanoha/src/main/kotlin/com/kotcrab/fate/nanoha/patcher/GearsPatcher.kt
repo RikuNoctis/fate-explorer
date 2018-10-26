@@ -23,7 +23,6 @@ import com.kotcrab.fate.nanoha.file.PacFileEntry
 import com.kotcrab.fate.nanoha.file.Tim2File
 import com.kotcrab.fate.nanoha.gearsPatch
 import com.kotcrab.fate.util.EbootPatcher
-import com.kotcrab.fate.util.appendLine
 import kio.KioInputStream
 import kio.util.*
 import org.apache.commons.exec.PumpStreamHandler

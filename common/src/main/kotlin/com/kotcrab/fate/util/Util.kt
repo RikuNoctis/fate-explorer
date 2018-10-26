@@ -20,6 +20,7 @@ import kio.KioInputStream
 import kio.KioOutputStream
 import kio.LERandomAccessFile
 import kio.util.WINDOWS_932
+import kio.util.appendLine
 import java.nio.charset.Charset
 
 
@@ -27,11 +28,6 @@ import java.nio.charset.Charset
 
 fun StringBuilder.appendWindowsLine(text: String = "") {
     appendLine(text, "\r\n")
-}
-
-fun StringBuilder.appendLine(text: String = "", newLine: String = "\n") {
-    append(text)
-    append(newLine)
 }
 
 fun KioInputStream.readDatString(at: Int = pos(), maintainStreamPos: Boolean = false, fixUpNewLine: Boolean = false,

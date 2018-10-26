@@ -16,6 +16,7 @@
 
 package com.kotcrab.fate.util
 
+import kio.util.appendLine
 import kio.util.child
 import java.io.File
 
