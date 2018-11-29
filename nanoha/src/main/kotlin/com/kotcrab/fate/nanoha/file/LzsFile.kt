@@ -26,10 +26,8 @@ import java.io.File
 class LzsFile(bytes: ByteArray) {
     constructor(file: File) : this(file.readBytes())
 
-    lateinit var decompressedBytes: ByteArray
-        private set
-    lateinit var fileName: String
-        private set
+    val decompressedBytes: ByteArray
+    val fileName: String
 
     init {
         with(KioInputStream(bytes)) {

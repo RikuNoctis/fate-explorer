@@ -26,7 +26,6 @@ import kio.util.toWHex
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.RandomAccessFile
-import kotlin.coroutines.experimental.buildSequence
 
 /**
  * .CPK unpacker
@@ -172,7 +171,7 @@ class CpkFile(val file: File, private val log: Log = Log()) {
 
         with(BitInputStream(dataComp)) {
             while (out.size() < sizeOrig) {
-                val sizes = buildSequence {
+                val sizes = sequence {
                     yield(2)
                     yield(3)
                     yield(5)

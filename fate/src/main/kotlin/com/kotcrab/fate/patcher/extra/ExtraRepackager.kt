@@ -29,10 +29,10 @@ import com.kotcrab.fate.patcher.extra.file.*
 import com.kotcrab.fate.util.EbootPatch
 import com.kotcrab.fate.util.EbootPatcher
 import kio.util.*
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.newFixedThreadPoolContext
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.newFixedThreadPoolContext
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.nio.charset.Charset
 

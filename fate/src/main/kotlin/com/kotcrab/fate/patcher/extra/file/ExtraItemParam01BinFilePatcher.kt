@@ -45,7 +45,7 @@ class ExtraItemParam01BinFilePatcher(origBytes: ByteArray, outFile: File, transl
 
             repeat(entries) {
                 val origEntryBytes = readBytes(0x100)
-                var origEntry: ExtraItemParam01Entry? = null
+                var origEntry: ExtraItemParam01Entry
                 with(KioInputStream(origEntryBytes)) itemParse@{
                     val name = readDatString(maintainStreamPos = true, charset = charset)
                     skip(0x54)
@@ -59,7 +59,7 @@ class ExtraItemParam01BinFilePatcher(origBytes: ByteArray, outFile: File, transl
                     skip(0x34)
                     origEntry = ExtraItemParam01Entry(origEntryBytes, name, buyValue, sellValue, desc, trivia1, trivia2)
                 }
-                if (origEntry!!.isUnused()) {
+                if (origEntry.isUnused()) {
                     out.writeBytes(origEntryBytes)
                 } else {
                     with(KioInputStream(origEntryBytes)) {

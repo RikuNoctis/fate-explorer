@@ -39,9 +39,8 @@ class PkFile(pkFile: File, outDir: File, val log: Log = Log()) {
         val pfsOffsetData = mutableListOf<PfsOffsetEntry>()
         val pfsNameData = mutableListOf<PfsNameEntry>()
 
-        var dirCount: Int = -1
-        var pfsFileCount: Int = -1
-
+        var dirCount: Int
+        var pfsFileCount: Int
         log.info("Reading file dictionary...")
         with(KioInputStream(pfsFile, littleEndian = false)) {
             readInt()

@@ -147,7 +147,7 @@ class MergeHieroFont(private val hieroDir: File, fontDir: File) {
 }
 
 private class GearsFntMerge(val srcFnt: File, val pngFile: File, val hieroDefs: HieroFile) {
-    private lateinit var newBytes: ByteArray
+    private val newBytes: ByteArray
     private var glyphWidthSectPos: Int = 0
     private var texDataPos: Int = 0
     private var texDataSize: Int = 0

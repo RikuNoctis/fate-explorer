@@ -25,8 +25,7 @@ import java.io.File
 class ElfFile(val bytes: ByteArray) {
     constructor(file: File) : this(file.readBytes())
 
-    lateinit var header: ElfHeader
-        private set
+    val header: ElfHeader
     val programHeaders: Array<ElfProgramHeader>
     val sectionHeaders: Array<ElfSectionHeader>
 

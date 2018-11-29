@@ -26,7 +26,7 @@ import java.io.File
  * @author Kotcrab
  * */
 class CmpFile(file: File) {
-    private lateinit var data: DecodedData
+    private val data: DecodedData
 
     init {
         with(KioInputStream(file)) {

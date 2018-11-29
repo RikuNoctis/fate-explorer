@@ -27,7 +27,7 @@ import java.io.File
 class FntFile(bytes: ByteArray) {
     constructor(file: File) : this(file.readBytes())
 
-    private lateinit var image: ImageWriter
+    private val image: ImageWriter
 
     init {
         with(KioInputStream(bytes)) {
