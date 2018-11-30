@@ -49,7 +49,9 @@ class ExtraItemParam01BinFile(bytes: ByteArray, jpSize: Boolean) {
                     skip(if (jpSize) 0x30 else 0x34)
                     val trivia2 = readDatString(maintainStreamPos = true)
                     skip(if (jpSize) 0x28 else 0x34)
-                    itemEntries.add(ExtraItemParam01Entry(entryBytes, name, buyValue, sellValue, desc, trivia1, trivia2))
+                    itemEntries.add(
+                        ExtraItemParam01Entry(entryBytes, name, buyValue, sellValue, desc, trivia1, trivia2)
+                    )
                 }
             }
             close()
@@ -59,7 +61,9 @@ class ExtraItemParam01BinFile(bytes: ByteArray, jpSize: Boolean) {
     }
 }
 
-class ExtraItemParam01Entry(val bytes: ByteArray, val name: String, val buyValue: Int, val sellValue: Int,
-                            val description: String, val trivia1: String, val trivia2: String) {
+class ExtraItemParam01Entry(
+    val bytes: ByteArray, val name: String, val buyValue: Int, val sellValue: Int,
+    val description: String, val trivia1: String, val trivia2: String
+) {
     fun isUnused(): Boolean = name == "（予備）"
 }

@@ -26,9 +26,11 @@ import java.io.File
 import java.nio.charset.Charset
 
 /** @author Kotcrab */
-class ExtraSjisFilePatcher(origBytes: ByteArray, origJpBytes: ByteArray,
-                           outFile: File, translation: ExtraTranslation, translationOffset: Int,
-                           charset: Charset = Charsets.WINDOWS_932) {
+class ExtraSjisFilePatcher(
+    origBytes: ByteArray, origJpBytes: ByteArray,
+    outFile: File, translation: ExtraTranslation, translationOffset: Int,
+    charset: Charset = Charsets.WINDOWS_932
+) {
     init {
         val out = KioOutputStream(outFile)
         var entryCount = 0
@@ -49,7 +51,8 @@ class ExtraSjisFilePatcher(origBytes: ByteArray, origJpBytes: ByteArray,
                     val texts = arrayOf(l1, l2, l3, l4, l5)
                     if (texts.all { it.isNotBlank() }) {
                         if (SjisEntry(l1, l2, l3, l4, l5).isUnused() &&
-                                SjisEntry(jpl1, jpl2, jpl3, jpl4, jpl5).isUnused()) {
+                            SjisEntry(jpl1, jpl2, jpl3, jpl4, jpl5).isUnused()
+                        ) {
                             out.writeNullTerminatedString(l1, charset = charset)
                             out.writeNullTerminatedString(l2, charset = charset)
                             out.writeNullTerminatedString(l3, charset = charset)

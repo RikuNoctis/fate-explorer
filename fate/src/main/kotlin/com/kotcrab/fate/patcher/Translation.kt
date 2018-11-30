@@ -19,9 +19,11 @@ package com.kotcrab.fate.patcher
 import java.io.File
 
 /** @author Kotcrab */
-abstract class Translation(jpFile: File, enFile: File = jpFile.resolveSibling("script-translation.txt"),
-                           stripNewLine: Boolean = false,
-                           private val overrides: Map<Int, String> = mapOf()) {
+abstract class Translation(
+    jpFile: File, enFile: File = jpFile.resolveSibling("script-translation.txt"),
+    stripNewLine: Boolean = false,
+    private val overrides: Map<Int, String> = mapOf()
+) {
     val jpTexts = processTranslationFile(jpFile, stripNewLine)
     val enTexts = processTranslationFile(enFile, stripNewLine)
 
@@ -49,7 +51,7 @@ abstract class Translation(jpFile: File, enFile: File = jpFile.resolveSibling("s
 
 private fun processTranslationFile(file: File, stripNewLine: Boolean): List<String> {
     return file.readText()
-            .split("{end}\n\n").dropLast(1)
-            .map { if (it.startsWith("\uFEFF")) it.substring(1) else it }
-            .map { if (stripNewLine) it.replace("\n", "") else it }
+        .split("{end}\n\n").dropLast(1)
+        .map { if (it.startsWith("\uFEFF")) it.substring(1) else it }
+        .map { if (stripNewLine) it.replace("\n", "") else it }
 }

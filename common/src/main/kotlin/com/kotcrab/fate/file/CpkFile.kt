@@ -333,8 +333,10 @@ class CpkFile(val file: File, private val log: Log = Log()) {
         log.fatal("No UTF match")
     }
 
-    private fun patchUtf(input: KioInputStream, table: UtfTable, index: Int, name: String,
-                         writer: (offset: Long) -> Unit) = with(input) {
+    private fun patchUtf(
+        input: KioInputStream, table: UtfTable, index: Int, name: String,
+        writer: (offset: Long) -> Unit
+    ) = with(input) {
         for (i in index until table.rows) {
             val widthOffset = i * table.rowWidth
             var rowOffset = table.tableOffset + 8 + table.rowsOffset + widthOffset

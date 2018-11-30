@@ -41,7 +41,7 @@ class MergeHieroFont(private val hieroDir: File, fontDir: File) {
         writeNewFontPng(hiero)
         val newFont = fontDir.child("story01_new.fnt")
         GearsFntMerge(fontDir.child("story01.fnt"), hieroDir.child("new.png"), hiero)
-                .mergeTo(newFont, charIdToGlyphIdMap)
+            .mergeTo(newFont, charIdToGlyphIdMap)
         FntFile(newFont).writeToPng(newFont.resolveSibling("story01_new.png"))
     }
 

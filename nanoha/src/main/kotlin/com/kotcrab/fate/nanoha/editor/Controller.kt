@@ -78,7 +78,13 @@ class Controller : Controller() {
             mainScreen.openWindow()
             mainScreen.currentStage!!.setOnCloseRequest {
                 mainScreen.closeModals()
-                confirmation("Save changes", "Save changes before quiting?", ButtonType.YES, ButtonType.NO, ButtonType.CANCEL) { button ->
+                confirmation(
+                    "Save changes",
+                    "Save changes before quiting?",
+                    ButtonType.YES,
+                    ButtonType.NO,
+                    ButtonType.CANCEL
+                ) { button ->
                     if (button == ButtonType.YES) {
                         saveTranslation()
                     }
@@ -140,9 +146,10 @@ class Controller : Controller() {
     }
 }
 
-data class NavigationState(val goto: String = "",
-                           val hasPrevious: Boolean,
-                           val hasNext: Boolean
+data class NavigationState(
+    val goto: String = "",
+    val hasPrevious: Boolean,
+    val hasNext: Boolean
 )
 
 class NavigationStateModel : ItemViewModel<NavigationState>() {

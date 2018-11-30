@@ -23,23 +23,33 @@ import kio.util.walkDir
 import java.io.File
 
 /** @author Kotcrab */
-class GimTextureConverter(private val gimConvExe: File,
-                          private val srcDir: File,
-                          private val fileFilter: (File) -> Boolean) {
+class GimTextureConverter(
+    private val gimConvExe: File,
+    private val srcDir: File,
+    private val fileFilter: (File) -> Boolean
+) {
     fun convertTo(outDir: File) {
         outDir.mkdirs()
         var convertedCount = 0
         walkDir(srcDir, processFile = {
             if (fileFilter(it)) {
                 if (it.extension == "gim") {
-                    execute(gimConvExe, arrayOf(it, "-o",
-                            outDir.child("${it.relativizePath(srcDir).replace("/", "$")}.png")))
+                    execute(
+                        gimConvExe, arrayOf(
+                            it, "-o",
+                            outDir.child("${it.relativizePath(srcDir).replace("/", "$")}.png")
+                        )
+                    )
                     convertedCount++
                 } else {
                     val gimFile = it.resolveSibling("${it.nameWithoutExtension}.gim")
                     it.renameTo(gimFile)
-                    execute(gimConvExe, arrayOf(gimFile, "-o",
-                            outDir.child("${it.relativizePath(srcDir).replace("/", "$")}.png")))
+                    execute(
+                        gimConvExe, arrayOf(
+                            gimFile, "-o",
+                            outDir.child("${it.relativizePath(srcDir).replace("/", "$")}.png")
+                        )
+                    )
                     convertedCount++
                     gimFile.renameTo(it)
                 }

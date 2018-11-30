@@ -26,8 +26,10 @@ import kio.util.toUnsignedInt
 import java.io.File
 
 /** @author Kotcrab */
-class FtxtPatcher(private val srcAsmFile: File,
-                  private val entries: List<TextEntry>) {
+class FtxtPatcher(
+    private val srcAsmFile: File,
+    private val entries: List<TextEntry>
+) {
     fun patchTo(targetFile: File) {
         val ftxtSectOffset = getSubArrayPos(srcAsmFile.readBytes(), "FTXT".toByteArray())
         if (ftxtSectOffset == -1) error("This ASM file does not have FTXT section")
@@ -57,26 +59,26 @@ class FtxtPatcher(private val srcAsmFile: File,
                 newPointers.add(filePointer.toInt() - ftxtSectOffset - textSectOffset)
 
                 val textIter = newText
-                        .replace("\n", "")
-                        .replace("@", "\\x0080")
-                        .replace("W", "\\x0082")
-                        .replace("―", "\\x00A0")
-                        .replace("–", "\\x00A0")
-                        .replace("－", "\\x00A0") //yep those map to the same
-                        .replace("’", "\\x00A1")
-                        .replace("“", "\\x00A2")
-                        .replace("”", "\\x00A3")
-                        .replace("…", "\\x00A4")
-                        .replace("ä", "\\x0084")
-                        .replace("ç", "\\x0085")
-                        .replace("ü", "\\x0086")
-                        .replace("‘", "\\x0088")
-                        .replace("♪", "\\x00A5") //special
-                        .replace("←", "\\x00A6")
-                        .replace("「", "\\x00A7")
-                        .replace("」", "\\x00A8")
-                        .replace("☆", "\\x00A9")
-                        .toCharArray().iterator()
+                    .replace("\n", "")
+                    .replace("@", "\\x0080")
+                    .replace("W", "\\x0082")
+                    .replace("―", "\\x00A0")
+                    .replace("–", "\\x00A0")
+                    .replace("－", "\\x00A0") //yep those map to the same
+                    .replace("’", "\\x00A1")
+                    .replace("“", "\\x00A2")
+                    .replace("”", "\\x00A3")
+                    .replace("…", "\\x00A4")
+                    .replace("ä", "\\x0084")
+                    .replace("ç", "\\x0085")
+                    .replace("ü", "\\x0086")
+                    .replace("‘", "\\x0088")
+                    .replace("♪", "\\x00A5") //special
+                    .replace("←", "\\x00A6")
+                    .replace("「", "\\x00A7")
+                    .replace("」", "\\x00A8")
+                    .replace("☆", "\\x00A9")
+                    .toCharArray().iterator()
                 while (textIter.hasNext()) {
                     val char = textIter.nextChar()
                     when {
@@ -88,8 +90,9 @@ class FtxtPatcher(private val srcAsmFile: File,
                                     writeByte(0xF0)
                                 }
                                 'x' -> {
-                                    val encodedStr = "${textIter.nextChar().toUpperCase()}${textIter.nextChar().toUpperCase()}" +
-                                            "${textIter.nextChar().toUpperCase()}${textIter.nextChar().toUpperCase()}"
+                                    val encodedStr =
+                                        "${textIter.nextChar().toUpperCase()}${textIter.nextChar().toUpperCase()}" +
+                                                "${textIter.nextChar().toUpperCase()}${textIter.nextChar().toUpperCase()}"
                                     val bytes = BaseEncoding.base16().decode(encodedStr)
                                     writeByte(bytes[1].toUnsignedInt())
                                     writeByte(bytes[0].toUnsignedInt())

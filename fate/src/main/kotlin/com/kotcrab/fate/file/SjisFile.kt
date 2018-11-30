@@ -49,5 +49,6 @@ class SjisFile(bytes: ByteArray) {
 }
 
 class SjisEntry(val l1: String, val l2: String, val l3: String, val l4: String, val l5: String) {
-    fun isUnused(): Boolean = l1 in listOf("（予備）", "0") && l2 in listOf("（予備）", "0") && l3 == "0" && l4 == "0" && l5 == "0"
+    fun isUnused(): Boolean =
+        l1 in listOf("（予備）", "0") && l2 in listOf("（予備）", "0") && l3 == "0" && l4 == "0" && l5 == "0"
 }

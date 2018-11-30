@@ -21,9 +21,11 @@ import kio.util.*
 import java.io.File
 
 /** @author Kotcrab */
-class GmoTextureConverter(private val gimConvExe: File,
-                          private val srcDir: File,
-                          private val fileFilter: (File) -> Boolean) {
+class GmoTextureConverter(
+    private val gimConvExe: File,
+    private val srcDir: File,
+    private val fileFilter: (File) -> Boolean
+) {
     fun convertTo(outDir: File) {
         outDir.mkdirs()
         val tmpGim = outDir.child("tmp.gim")
@@ -49,8 +51,12 @@ class GmoTextureConverter(private val gimConvExe: File,
                 println("Found ${textures.size} textures")
                 textures.forEachIndexed { index, bytes ->
                     tmpGim.writeBytes(bytes)
-                    execute(gimConvExe, arrayOf(tmpGim, "-o",
-                            outDir.child("${it.relativizePath(srcDir).replace("/", "$")}!tex$index.png")))
+                    execute(
+                        gimConvExe, arrayOf(
+                            tmpGim, "-o",
+                            outDir.child("${it.relativizePath(srcDir).replace("/", "$")}!tex$index.png")
+                        )
+                    )
                     convertedGimCount++
                 }
                 convertedGmoCount++

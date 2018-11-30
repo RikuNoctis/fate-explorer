@@ -123,7 +123,7 @@ class PkFile(pkFile: File, outDir: File, val log: Log = Log()) {
 
                 val pathHash = crc32(relPath.toString().replace("\\", "/").toLowerCase().toByteArray())
                 val fileDescriptor = pkhData.firstOrNull { it.lowercasePathHash == pathHash }
-                        ?: log.fatal("Can't find file descriptor")
+                    ?: log.fatal("Can't find file descriptor")
                 pkArchive.setPos(fileDescriptor.pkOffset)
                 if (fileDescriptor.compressedSize == 0) {
                     println("$progress Extract $relPath...")
@@ -149,17 +149,24 @@ class PkFile(pkFile: File, outDir: File, val log: Log = Log()) {
     }
 
     private fun crc32(bytes: ByteArray): Int {
-        return PkCrc32.get(bytes, bytes.size)
+        return PkCrc32.get(bytes)
     }
 
-    private data class PfsDirEntry(val dirId: Int, val parentDirId: Int, val startChildDir: Int, val childDirCount: Int,
-                                   val startChildFile: Int, val childFileCount: Int)
+    private data class PfsDirEntry(
+        val dirId: Int, val parentDirId: Int, val startChildDir: Int, val childDirCount: Int,
+        val startChildFile: Int, val childFileCount: Int
+    )
 
     private data class PfsOffsetEntry(val offset: Int)
 
     private data class PfsNameEntry(val name: String)
 
-    private data class PkhEntry(val lowercasePathHash: Int, val pkOffset: Long, val decompressedSize: Int, val compressedSize: Int)
+    private data class PkhEntry(
+        val lowercasePathHash: Int,
+        val pkOffset: Long,
+        val decompressedSize: Int,
+        val compressedSize: Int
+    )
 
     private fun KioInputStream.readIntUnsigned(): Long {
         return readInt().toLong() and 0xffffffffL

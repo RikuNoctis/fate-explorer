@@ -37,9 +37,11 @@ import java.io.File
 import java.nio.charset.Charset
 
 /** @author Kotcrab */
-class ExtraRepackager(val projectDir: File,
-                      val skipTranslationInsertion: Boolean = false,
-                      val skipCpkCreation: Boolean = false) {
+class ExtraRepackager(
+    val projectDir: File,
+    val skipTranslationInsertion: Boolean = false,
+    val skipCpkCreation: Boolean = false
+) {
     private val gson = GsonBuilder().setPrettyPrinting().create()
 
     private val cpkSrcDir = projectDir.child("src/cpk")
@@ -230,10 +232,17 @@ class ExtraRepackager(val projectDir: File,
 
                         val newFile = newPakSrcDir.child(path)
                         val oldEntry = newEntries[entryIndex]
-                        newEntries[entryIndex] = PakFileEntry(oldEntry.index, oldEntry.path, padArray(newFile.readBytes()))
+                        newEntries[entryIndex] =
+                                PakFileEntry(oldEntry.index, oldEntry.path, padArray(newFile.readBytes()))
                     }
                     if (sourcePakFile.name == "PRELOAD.pak") {
-                        newEntries.add(PakFileEntry(newEntries.last().index + 1, "hax/extrapatch.o", padArray(extraPatcher.extraPatchBytes)))
+                        newEntries.add(
+                            PakFileEntry(
+                                newEntries.last().index + 1,
+                                "hax/extrapatch.o",
+                                padArray(extraPatcher.extraPatchBytes)
+                            )
+                        )
                     }
                     println("Writing modified PAK '${pakToBuild.key}'")
                     lastBuild.modifiedPaks.remove(pakToBuild.key)
@@ -272,8 +281,10 @@ class ExtraRepackager(val projectDir: File,
             return
         }
         println("Native CPK packager running...")
-        Runtime.getRuntime().exec("""cmd /c "START /WAIT "" "${cpkMakecTool.absolutePath}" "${cpkOut.absolutePath}" "${outputCpk.absoluteFile}"
--align=2048 -code=UTF-8 -mode=FILENAME -mask"""").waitFor()
+        Runtime.getRuntime().exec(
+            """cmd /c "START /WAIT "" "${cpkMakecTool.absolutePath}" "${cpkOut.absolutePath}" "${outputCpk.absoluteFile}"
+-align=2048 -code=UTF-8 -mode=FILENAME -mask""""
+        ).waitFor()
         File("cpkmaker.out.csv").delete()
     }
 
@@ -299,8 +310,10 @@ class ExtraRepackager(val projectDir: File,
 
     inner class DatTranslationProcessor(unitDir: File) {
         val translation = ExtraTranslation(unitDir.child("script-japanese.txt"))
-        val translationOrig = ExtraTranslation(unitDir.child("script-japanese.txt"),
-                unitDir.child("script-translation-orig.txt"))
+        val translationOrig = ExtraTranslation(
+            unitDir.child("script-japanese.txt"),
+            unitDir.child("script-translation-orig.txt")
+        )
 
         val skip = false
 
@@ -321,23 +334,25 @@ class ExtraRepackager(val projectDir: File,
         }
 
         private fun checkDuplicates() {
-            val translationOrig = ExtraTranslation(projectDir.child("translation/dat/script-japanese.txt"),
-                    projectDir.child("translation/dat/script-translation-orig.txt"))
+            val translationOrig = ExtraTranslation(
+                projectDir.child("translation/dat/script-japanese.txt"),
+                projectDir.child("translation/dat/script-translation-orig.txt")
+            )
             val translation = ExtraTranslation(projectDir.child("translation/dat/script-japanese.txt"))
             translationOrig.enTexts
-                    .mapIndexed { idx, text -> Pair(idx, text) }
-                    .groupBy { it.second }
-                    .filter { it.value.size > 1 }
-                    .forEach { origEntry ->
-                        val translatedSet = HashSet<Pair<String, String>>()
-                        origEntry.value.forEach { set ->
-                            val newText = translation.enTexts[set.first]
-                            translatedSet.add(Pair(set.second, newText))
-                        }
-                        if (translatedSet.size > 1) {
-                            warn("DAT English duplicate: ${translatedSet.first().first}")
-                        }
+                .mapIndexed { idx, text -> Pair(idx, text) }
+                .groupBy { it.second }
+                .filter { it.value.size > 1 }
+                .forEach { origEntry ->
+                    val translatedSet = HashSet<Pair<String, String>>()
+                    origEntry.value.forEach { set ->
+                        val newText = translation.enTexts[set.first]
+                        translatedSet.add(Pair(set.second, newText))
                     }
+                    if (translatedSet.size > 1) {
+                        warn("DAT English duplicate: ${translatedSet.first().first}")
+                    }
+                }
         }
 
         private fun patchFile(path: String, fileEntries: List<CombinedDatEntry>) {
@@ -357,8 +372,10 @@ class ExtraRepackager(val projectDir: File,
 
     inner class MiscTranslationProcessor(unitDir: File) {
         val translation = ExtraTranslation(unitDir.child("script-japanese.txt"))
-        val translationOrig = ExtraTranslation(unitDir.child("script-japanese.txt"),
-                unitDir.child("script-translation-orig.txt"))
+        val translationOrig = ExtraTranslation(
+            unitDir.child("script-japanese.txt"),
+            unitDir.child("script-translation-orig.txt")
+        )
         val entries: List<TranslationEntry> = Gson().fromJson(unitDir.child("entries.json").readText())
 
         init {
@@ -412,16 +429,26 @@ class ExtraRepackager(val projectDir: File,
 
         private fun patchSjisFile(path: String, translationOffset: Int, charset: Charset = Charsets.WINDOWS_932) {
             patchFile(path, translationOffset, charset, handler = { bytes, file, translation, offset, hCharset ->
-                ExtraSjisFilePatcher(bytes, projectDir.child("src/chaDataTblJP.sjis").readBytes(),
-                        file, translation, offset, hCharset)
+                ExtraSjisFilePatcher(
+                    bytes, projectDir.child("src/chaDataTblJP.sjis").readBytes(),
+                    file, translation, offset, hCharset
+                )
             })
         }
 
-        private fun patchItemParam01File(path: String, translationOffset: Int, charset: Charset = Charsets.WINDOWS_932) {
+        private fun patchItemParam01File(
+            path: String,
+            translationOffset: Int,
+            charset: Charset = Charsets.WINDOWS_932
+        ) {
             patchFile(path, translationOffset, charset, ::ExtraItemParam01BinFilePatcher)
         }
 
-        private fun patchItemParam04File(path: String, translationOffset: Int, charset: Charset = Charsets.WINDOWS_932) {
+        private fun patchItemParam04File(
+            path: String,
+            translationOffset: Int,
+            charset: Charset = Charsets.WINDOWS_932
+        ) {
             patchFile(path, translationOffset, charset, ::ExtraItemParam04BinFilePatcher)
         }
 
@@ -429,24 +456,41 @@ class ExtraRepackager(val projectDir: File,
             patchFile(path, translationOffset, charset, ::ExtraIndexedTextBinFilePatcher)
         }
 
-        private fun patchExtendedTextBinFile(path: String, translationOffset: Int, charset: Charset = Charsets.WINDOWS_932) {
+        private fun patchExtendedTextBinFile(
+            path: String,
+            translationOffset: Int,
+            charset: Charset = Charsets.WINDOWS_932
+        ) {
             patchFile(path, translationOffset, charset, ::ExtraFixedSizeTextBinFilePatcher)
         }
 
-        private fun patchInfomatrixFiles(path: String, translationOffset: Int, charset: Charset = Charsets.WINDOWS_932) {
+        private fun patchInfomatrixFiles(
+            path: String,
+            translationOffset: Int,
+            charset: Charset = Charsets.WINDOWS_932
+        ) {
             patchFile(path, translationOffset, charset, ::ExtraInfoMatrixBinDFilePatcher)
-            patchFile(path.replace("_d_", "_t_"),
-                    translationOffset, charset, ::ExtraInfoMatrixBinTFilePatcher)
+            patchFile(
+                path.replace("_d_", "_t_"),
+                translationOffset, charset, ::ExtraInfoMatrixBinTFilePatcher
+            )
         }
 
-        private fun patchInDungeonFile(path: String, translationOffset: Int, count: Int, charset: Charset = Charsets.WINDOWS_932) {
+        private fun patchInDungeonFile(
+            path: String,
+            translationOffset: Int,
+            count: Int,
+            charset: Charset = Charsets.WINDOWS_932
+        ) {
             patchFile(path, translationOffset, charset, handler = { bytes, file, translation, offset, hCharset ->
                 ExtraChrDatFilePatcher(bytes, file, translation, translationOrig, offset, count, hCharset)
             })
         }
 
-        private fun patchFile(path: String, translationOffset: Int, charset: Charset = Charsets.WINDOWS_932,
-                              handler: (ByteArray, File, ExtraTranslation, Int, Charset) -> Any?) {
+        private fun patchFile(
+            path: String, translationOffset: Int, charset: Charset = Charsets.WINDOWS_932,
+            handler: (ByteArray, File, ExtraTranslation, Int, Charset) -> Any?
+        ) {
             println("Patching $path...")
             val relPakPath = pakRefs.files[path]!!.first()
             val pakFile = cpkSrcDir.child(relPakPath)
@@ -461,6 +505,12 @@ class ExtraRepackager(val projectDir: File,
         }
     }
 
-    data class TranslationEntry(val jp: String, val en: String, val note: String = "", val file: String, val fileOffset: Int)
+    data class TranslationEntry(
+        val jp: String,
+        val en: String,
+        val note: String = "",
+        val file: String,
+        val fileOffset: Int
+    )
 }
 

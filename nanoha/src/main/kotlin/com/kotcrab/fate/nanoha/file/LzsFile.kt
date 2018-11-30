@@ -50,13 +50,21 @@ class LzsFile(bytes: ByteArray) {
             val compr = readBytes(comprSize)
 
             decompressedBytes = ByteArray(decompressedSize)
-            decompress(SequentialArrayReader(dict), SequentialArrayReader(compr), SequentialArrayWriter(decompressedBytes))
+            decompress(
+                SequentialArrayReader(dict),
+                SequentialArrayReader(compr),
+                SequentialArrayWriter(decompressedBytes)
+            )
 
             close()
         }
     }
 
-    private fun decompress(dictReader: SequentialArrayReader, comprReader: SequentialArrayReader, decompWriter: SequentialArrayWriter) {
+    private fun decompress(
+        dictReader: SequentialArrayReader,
+        comprReader: SequentialArrayReader,
+        decompWriter: SequentialArrayWriter
+    ) {
         val bits = 5
         val threshold = 2
 

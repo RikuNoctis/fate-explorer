@@ -30,8 +30,10 @@ import java.io.File
 import java.nio.charset.Charset
 
 /** @author Kotcrab */
-class ExtraChrDatFilePatcher(origBytes: ByteArray, outFile: File, translation: ExtraTranslation, origTranslation: ExtraTranslation,
-                             translationOffset: Int, count: Int, charset: Charset = Charsets.WINDOWS_932) {
+class ExtraChrDatFilePatcher(
+    origBytes: ByteArray, outFile: File, translation: ExtraTranslation, origTranslation: ExtraTranslation,
+    translationOffset: Int, count: Int, charset: Charset = Charsets.WINDOWS_932
+) {
     init {
         outFile.writeBytes(origBytes)
         val raf = LERandomAccessFile(outFile)

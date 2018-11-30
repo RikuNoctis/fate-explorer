@@ -78,8 +78,10 @@ class SprSplitter(private val sprFile: File, private val pngFile: File) {
                         val outImg = if (drawCall == 0) outDir.child("$id.png") else outDir.child("${id}_$drawCall.png")
                         val x = (horizontalSampleStart * img.width).toInt()
                         val y = (verticalSampleStart * img.height).toInt()
-                        val width = (horizontalSampleEnd * img.width).toInt() - (horizontalSampleStart * img.width).toInt()
-                        val height = (verticalSampleEnd * img.height).toInt() - (verticalSampleStart * img.height).toInt()
+                        val width =
+                            (horizontalSampleEnd * img.width).toInt() - (horizontalSampleStart * img.width).toInt()
+                        val height =
+                            (verticalSampleEnd * img.height).toInt() - (verticalSampleStart * img.height).toInt()
                         ImageIO.write(img.getSubimage(x, y, width, height), "PNG", outImg)
                     }
                 }

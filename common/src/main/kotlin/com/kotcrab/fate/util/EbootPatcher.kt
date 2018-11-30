@@ -34,7 +34,13 @@ import javax.xml.bind.DatatypeConverter
 
 @Suppress("UNUSED_VARIABLE")
 /** @author Kotcrab */
-class EbootPatcher(inFile: File, outFile: File, patchList: List<EbootPatch>, baseProgramHeaderIdx: Int, relocationSectionHeaderIdx: Int) {
+class EbootPatcher(
+    inFile: File,
+    outFile: File,
+    patchList: List<EbootPatch>,
+    baseProgramHeaderIdx: Int,
+    relocationSectionHeaderIdx: Int
+) {
     init {
         val elf = ElfFile(inFile)
         val baseProgramHeader = elf.programHeaders[baseProgramHeaderIdx]

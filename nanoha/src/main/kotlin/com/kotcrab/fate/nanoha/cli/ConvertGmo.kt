@@ -28,11 +28,11 @@ fun main(args: Array<String>) {
         val gameTools = acesTools
         val gimConv = gameTools.child("""GimConv\GimConv.exe""")
         GmoTextureConverter(gimConv, acesPACUnpack, { it.extension == "gmo" })
-                .convertTo(acesOutput.child("texgmo"))
+            .convertTo(acesOutput.child("texgmo"))
     } else {
         val gameTools = gearsTools
         val gimConv = gameTools.child("""GimConv\GimConv.exe""")
         GmoTextureConverter(gimConv, gearsPACUnpack, { it.extension == "gmo" })
-                .convertTo(gearsOutput.child("texgmo"))
+            .convertTo(gearsOutput.child("texgmo"))
     }
 }

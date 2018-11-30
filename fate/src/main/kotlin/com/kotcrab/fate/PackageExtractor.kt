@@ -69,7 +69,10 @@ class PackageExtractor(srcDir: File, outDir: File, log: Log = Log()) {
                         duplicatesWithContentCollision.add(outName)
                         log.warn("Duplicate PAK file entry $outName with collision name in PAK ${file.name}")
                         for (i in 2..Integer.MAX_VALUE) {
-                            outFile = File(outFile.parentFile.path, "${outFile.nameWithoutExtension} ($i).${outFile.extension}")
+                            outFile = File(
+                                outFile.parentFile.path,
+                                "${outFile.nameWithoutExtension} ($i).${outFile.extension}"
+                            )
                             if (outFile.exists() == false) break
                         }
                     }

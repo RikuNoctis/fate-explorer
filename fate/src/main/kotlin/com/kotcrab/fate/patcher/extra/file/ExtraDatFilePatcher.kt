@@ -25,8 +25,10 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 
 /** @author Kotcrab */
-class ExtraDatFilePatcher(origBytes: ByteArray, outFile: File, translation: ExtraTranslation, origTranslation: ExtraTranslation,
-                          entries: List<CombinedDatEntry>) {
+class ExtraDatFilePatcher(
+    origBytes: ByteArray, outFile: File, translation: ExtraTranslation, origTranslation: ExtraTranslation,
+    entries: List<CombinedDatEntry>
+) {
     init {
         outFile.writeBytes(origBytes)
         val raf = LERandomAccessFile(outFile)

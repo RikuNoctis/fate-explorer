@@ -21,7 +21,12 @@ import java.io.File
 import javax.imageio.ImageIO
 
 /** @author Kotcrab */
-class ImageWriter(val width: Int, val height: Int, private val removeAlphaMask: Boolean, private val argbAlphaMask: Int) {
+class ImageWriter(
+    val width: Int,
+    val height: Int,
+    private val removeAlphaMask: Boolean,
+    private val argbAlphaMask: Int
+) {
     constructor(width: Int, height: Int) : this(width, height, false, -1)
 
     private val img = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)

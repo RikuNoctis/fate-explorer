@@ -57,7 +57,9 @@ class ExtraItemParam04BinFile(bytes: ByteArray, jpSize: Boolean) {
     }
 }
 
-class ExtraItemParam04Entry(val bytes: ByteArray, val name: String, val buyValue: Int, val sellValue: Int,
-                            val description: String, val trivia: String) {
+class ExtraItemParam04Entry(
+    val bytes: ByteArray, val name: String, val buyValue: Int, val sellValue: Int,
+    val description: String, val trivia: String
+) {
     fun isUnused(): Boolean = name in listOf("（予備）", "-")
 }

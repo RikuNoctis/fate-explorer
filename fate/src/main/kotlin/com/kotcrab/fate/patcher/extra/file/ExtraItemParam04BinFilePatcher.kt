@@ -27,8 +27,10 @@ import java.io.File
 import java.nio.charset.Charset
 
 /** @author Kotcrab */
-class ExtraItemParam04BinFilePatcher(origBytes: ByteArray, outFile: File, translation: ExtraTranslation, translationOffset: Int,
-                                     charset: Charset = Charsets.WINDOWS_932) {
+class ExtraItemParam04BinFilePatcher(
+    origBytes: ByteArray, outFile: File, translation: ExtraTranslation, translationOffset: Int,
+    charset: Charset = Charsets.WINDOWS_932
+) {
 
     init {
         val out = KioOutputStream(outFile)

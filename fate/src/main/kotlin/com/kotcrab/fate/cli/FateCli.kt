@@ -41,27 +41,29 @@ object FateCli {
     @JvmStatic
     fun main(args: Array<String>) {
         val builder = Cli.builder<Runnable>("fate")
-                .withDescription("Extra, CCC and Extella toolkit")
-                .withDefaultCommand(Help::class.java)
+            .withDescription("Extra, CCC and Extella toolkit")
+            .withDefaultCommand(Help::class.java)
 
         builder.withGroup("extract")
-                .withDescription("Utilities for extracting archives")
-                .withCommands(cmds(ExtractCpk::class, ExtractPak::class, ExtractCmp::class, ExtractExtraPackage::class))
+            .withDescription("Utilities for extracting archives")
+            .withCommands(cmds(ExtractCpk::class, ExtractPak::class, ExtractCmp::class, ExtractExtraPackage::class))
 
         builder.withGroup("create")
-                .withDescription("Utilities for converting files into Fate formats")
-                .withCommands(cmds(CreateCmp::class, CreatePak::class))
+            .withDescription("Utilities for converting files into Fate formats")
+            .withCommands(cmds(CreateCmp::class, CreatePak::class))
 
         builder.withGroup("dump")
-                .withDescription("Dump files to standard output in JSON format. " +
-                        "Should work for Extra US, Extra JP and CCC.")
-                .withCommands(cmds(DumpIndexedTextBin::class, DumpFixedSizeTextBin::class, DumpSjisBin::class))
+            .withDescription(
+                "Dump files to standard output in JSON format. " +
+                        "Should work for Extra US, Extra JP and CCC."
+            )
+            .withCommands(cmds(DumpIndexedTextBin::class, DumpFixedSizeTextBin::class, DumpSjisBin::class))
 
         val extraGroup = builder.withGroup("extra")
-                .withDescription("Utilities for Fate/Extra (US version)")
+            .withDescription("Utilities for Fate/Extra (US version)")
         extraGroup.withSubGroup("dump")
-                .withDescription("Dump files to standard output in JSON format")
-                .withCommands(cmds(DumpExtraInfoMatrix::class, DumpExtraItemParam01::class, DumpExtraItemParam04::class))
+            .withDescription("Dump files to standard output in JSON format")
+            .withCommands(cmds(DumpExtraInfoMatrix::class, DumpExtraItemParam01::class, DumpExtraItemParam04::class))
 
         stdCliLauncher(builder.build(), args)
     }
@@ -98,7 +100,10 @@ class CreateCmp : FateCommand() {
     @Arguments(description = "Path to input .pak file")
     private val pakPath = ""
 
-    @Option(name = arrayOf("--second-pass"), description = "Try to get smaller file size by searching entire dictionary (slower)")
+    @Option(
+        name = arrayOf("--second-pass"),
+        description = "Try to get smaller file size by searching entire dictionary (slower)"
+    )
     private val secondPass = false
 
     @Option(name = arrayOf("--output", "-o"), description = "Output file")
@@ -174,8 +179,10 @@ class ExtractCmp : FateCommand() {
     @Option(name = arrayOf("--output", "-o"), description = "Output directory")
     private val outputPath: String? = null
 
-    @Option(name = arrayOf("--decompress-only", "-d"), description = "Do not attempt to automatically" +
-            "extract decompressed CMP as PAK file")
+    @Option(
+        name = arrayOf("--decompress-only", "-d"), description = "Do not attempt to automatically" +
+                "extract decompressed CMP as PAK file"
+    )
     private val decompressOnly = false
 
     override fun run() {
@@ -204,8 +211,10 @@ class ExtractCmp : FateCommand() {
     }
 }
 
-@Command(name = "package", description = "Performs batch extraction on all .CMP and .PAK files from specified directory" +
-        "This should be used to extract all Fate/Extra or Fate/Extra CCC files from internal archives.")
+@Command(
+    name = "package", description = "Performs batch extraction on all .CMP and .PAK files from specified directory" +
+            "This should be used to extract all Fate/Extra or Fate/Extra CCC files from internal archives."
+)
 class ExtractExtraPackage : FateCommand() {
     @Required
     @Arguments(description = "Path to source directory")
@@ -256,8 +265,10 @@ class CreatePak : FateCommand() {
 @Command(name = "infomatrix", description = "Dumps infomatrix data")
 class DumpExtraInfoMatrix : FateCommand() {
     @Required
-    @Arguments(title = ["dFilePath", "tFilePath"], description = "Path of infomatrix_---_d_--.bin and " +
-            "infomatrix_---_t_--.bin files")
+    @Arguments(
+        title = ["dFilePath", "tFilePath"], description = "Path of infomatrix_---_d_--.bin and " +
+                "infomatrix_---_t_--.bin files"
+    )
     private val filePaths: List<String> = mutableListOf()
 
     override fun run() {

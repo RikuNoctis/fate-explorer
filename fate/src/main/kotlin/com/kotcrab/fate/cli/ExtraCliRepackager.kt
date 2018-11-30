@@ -24,8 +24,8 @@ import java.io.File
 fun main(args: Array<String>) {
     val toolkit = if (args.isEmpty()) fateBase.child("Extra Toolkit") else File(args.first())
     ExtraRepackager(
-            toolkit,
-            skipTranslationInsertion = false,
-            skipCpkCreation = false
+        toolkit,
+        skipTranslationInsertion = false,
+        skipCpkCreation = false
     ).buildAll()
 }

@@ -90,9 +90,14 @@ class GearsPatcher {
         sprDir.mkdir()
         sprConvertBackDir.mkdir()
         SprSplitter(texWorks.child(sprName), texWorks.child("msg_name_orig.tm2.png")).splitTo(sprDir)
-        SprNamesPatcher(texWorks.child(sprName), texWorks.child("bounds.txt"), 256, 256).patchTo(customGeneratedPacFilesDir.child(sprName))
+        SprNamesPatcher(texWorks.child(sprName), texWorks.child("bounds.txt"), 256, 256).patchTo(
+            customGeneratedPacFilesDir.child(sprName)
+        )
         println("Post check SPR")
-        SprSplitter(customGeneratedPacFilesDir.child(sprName), texWorks.child("$texName.png")).splitTo(sprConvertBackDir)
+        SprSplitter(
+            customGeneratedPacFilesDir.child(sprName),
+            texWorks.child("$texName.png")
+        ).splitTo(sprConvertBackDir)
     }
 
     private fun insertTranslation() {
@@ -116,8 +121,10 @@ class GearsPatcher {
             close()
         }
 
-        val patchedEboot = srcEboot.copyTo(srcEboot.resolveSibling("${srcEboot.nameWithoutExtension}_patched.bin"),
-                overwrite = true)
+        val patchedEboot = srcEboot.copyTo(
+            srcEboot.resolveSibling("${srcEboot.nameWithoutExtension}_patched.bin"),
+            overwrite = true
+        )
         EbootPatcher(srcEboot, patchedEboot, ebootPatches.assembleEbootPatches(extPatchBase), 0, 2)
         val ebootDir = isoBuildDir.child("PSP_GAME\\SYSDIR")
         patchedEboot.copyTo(ebootDir.child("BOOT.BIN"), overwrite = true)
@@ -137,9 +144,9 @@ class GearsPatcher {
     private fun buildCustomPacs() {
         println("--- Building custom PACs --- ")
         customIsoFilesDir.walk().toList()
-                .filter { it.isFile }
-                .filter { it.extension == "pac" }
-                .forEach { it.delete() }
+            .filter { it.isFile }
+            .filter { it.extension == "pac" }
+            .forEach { it.delete() }
 
         val pacFiles: Map<String, List<String>> = srcDir.child("pac_files.json").readJson()
         val lzsMap: Map<String, String> = srcDir.child("lzs_map.json").readJson()
@@ -205,17 +212,24 @@ class GearsPatcher {
 
     fun buildIso() {
         println("--- Writing ISO ---")
-        execute(mkisofsTool, workingDirectory = baseDir, streamHandler = PumpStreamHandler(System.out, System.out),
-                args = arrayOf("-sort", isoFileList.toRelativeNixPath(baseDir), "-iso-level", "4", "-xa",
-                        "-sysid", "\"PSP GAME\"", "-A", "\"PSP GAME\"", "-V", "NANOHA", "-publisher", "NANOHA",
-                        "-o", outIso.toRelativeNixPath(baseDir), isoBuildDir.toRelativeNixPath(baseDir)))
+        execute(
+            mkisofsTool, workingDirectory = baseDir, streamHandler = PumpStreamHandler(System.out, System.out),
+            args = arrayOf(
+                "-sort", isoFileList.toRelativeNixPath(baseDir), "-iso-level", "4", "-xa",
+                "-sysid", "\"PSP GAME\"", "-A", "\"PSP GAME\"", "-V", "NANOHA", "-publisher", "NANOHA",
+                "-o", outIso.toRelativeNixPath(baseDir), isoBuildDir.toRelativeNixPath(baseDir)
+            )
+        )
     }
 
     private fun fixSoundLba() {
         println("--- Fixing sound LBA ---")
         with(RandomAccessFile(outIso, "rw")) {
             val soundLbaMagic = BaseEncoding.base16()
-                    .decode("73 6F 75 6E 64 5F 6C 62 61 5F 73 69 7A 65 2E 62 69 6E 00 00 00 00 00 0D 55 58 41".replace(" ", ""))
+                .decode(
+                    "73 6F 75 6E 64 5F 6C 62 61 5F 73 69 7A 65 2E 62 69 6E 00 00 00 00 00 0D 55 58 41".replace(
+                        " ", "")
+                )
             seek(getSubArrayPos(soundLbaMagic) - 0x1B)
             val soundLbaFilePos = readInt() * 2048L
             fixLbaTable(this, soundLbaFilePos)
@@ -228,14 +242,19 @@ class GearsPatcher {
     }
 
     private fun fixLbaTable(isoRaf: RandomAccessFile, soundLbaFilePos: Long) {
-        data class LbaEntry(val fileName: String, val extent: Int, var newExtent: Int = -1, var soundLbaSizeEntryPos: Int = -1)
+        data class LbaEntry(
+            val fileName: String,
+            val extent: Int,
+            var newExtent: Int = -1,
+            var soundLbaSizeEntryPos: Int = -1
+        )
 
         val pathPrefix = "\\PSP_GAME\\USRDIR\\sound\\"
         val soundFiles = isoLbaList.readLines()
-                .map { it.replace(" ", "").split(",") }
-                .filter { it[1].startsWith(pathPrefix) }
-                .map { LbaEntry(it[1].removePrefix(pathPrefix), it[0].toInt()) }
-                .associateBy({ it.extent }, { it })
+            .map { it.replace(" ", "").split(",") }
+            .filter { it[1].startsWith(pathPrefix) }
+            .map { LbaEntry(it[1].removePrefix(pathPrefix), it[0].toInt()) }
+            .associateBy({ it.extent }, { it })
         with(KioInputStream(isoSrcDir.child("PSP_GAME/USRDIR/sound_lba_size.bin"))) {
             setPos(0xC0)
             while (!eof()) {
@@ -287,7 +306,7 @@ class GearsPatcher {
         println("--- Fixing file index ---")
         with(RandomAccessFile(outIso, "rw")) {
             val fileIndexLbaMagic = BaseEncoding.base16()
-                    .decode("66 69 6C 65 5F 69 6E 64 65 78 2E 62 69 6E 00 00 00 00 00 0D 55 58 41".replace(" ", ""))
+                .decode("66 69 6C 65 5F 69 6E 64 65 78 2E 62 69 6E 00 00 00 00 00 0D 55 58 41".replace(" ", ""))
             seek(getSubArrayPos(fileIndexLbaMagic) - 0x1B)
             val indexFilePos = readInt() * 2048L
             fixFileIndexTable(this, indexFilePos)
@@ -374,7 +393,8 @@ class GearsPatcher {
         }
 
         val batFileOut = StringBuilder()
-        batFileOut.append("""@echo off
+        batFileOut.append(
+            """@echo off
 if not "%ISO_READY%"=="yep" goto :NOPE
 
 REM Did you know this is auto generated?
@@ -390,7 +410,8 @@ goto :FIN
 :ERR
 exit /b 1
 
-:FIN""")
+:FIN"""
+        )
         xdeltaDir.child("apply.bat").writeText(batFileOut.toString().replace("\n", "\r\n"))
     }
 

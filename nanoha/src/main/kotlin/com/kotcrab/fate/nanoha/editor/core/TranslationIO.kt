@@ -88,20 +88,21 @@ class TranslationIO {
         println("Search for $query")
         val res = mutableListOf<String>()
         res.addAll(entries.filter { it.translation.contains(query, ignoreCase = true) }
-                .map { "${it.globalIndex + 1} - ${it.translation.replace("\n", "")}" })
+            .map { "${it.globalIndex + 1} - ${it.translation.replace("\n", "")}" })
         res.addAll(entries.filter { it.notes.contains(query, ignoreCase = true) }
-                .map { "${it.globalIndex + 1} - ${it.notes.replace("\n", "")}" })
+            .map { "${it.globalIndex + 1} - ${it.notes.replace("\n", "")}" })
         return res
     }
 }
 
 @Suppress("ArrayInDataClass")
-data class TextEntry(val globalIndex: Int,
-                     val relPath: String,
-                     val ftxtIndex: Int,
-                     var translation: String,
-                     var notes: String,
-                     @Transient var encodedText: IntArray? = null
+data class TextEntry(
+    val globalIndex: Int,
+    val relPath: String,
+    val ftxtIndex: Int,
+    var translation: String,
+    var notes: String,
+    @Transient var encodedText: IntArray? = null
 )
 
 class TextEntryModel : ItemViewModel<TextEntry>() {

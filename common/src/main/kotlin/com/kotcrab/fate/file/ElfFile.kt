@@ -37,22 +37,26 @@ class ElfFile(val bytes: ByteArray) {
 
             if (readByte().toUnsignedInt() != 0x7F || readString(3) != "ELF") error("Not an ELF file")
             header = ElfHeader(
-                    entryPoint = readInt(at = 0x18),
-                    programHeaderOffset = readInt(at = 0x1C),
-                    programHeaderSize = readShort(at = 0x2A).toInt(),
-                    programHeaderCount = readShort(at = 0x2C).toInt(),
-                    sectionHeaderOffset = readInt(at = 0x20),
-                    sectionHeaderSize = readShort(at = 0x2E).toInt(),
-                    sectionHeaderCount = readShort(at = 0x30).toInt())
+                entryPoint = readInt(at = 0x18),
+                programHeaderOffset = readInt(at = 0x1C),
+                programHeaderSize = readShort(at = 0x2A).toInt(),
+                programHeaderCount = readShort(at = 0x2C).toInt(),
+                sectionHeaderOffset = readInt(at = 0x20),
+                sectionHeaderSize = readShort(at = 0x2E).toInt(),
+                sectionHeaderCount = readShort(at = 0x30).toInt()
+            )
 
             setPos(header.programHeaderOffset)
             repeat(header.programHeaderCount) {
                 val progBytes = readBytes(header.programHeaderSize)
                 with(KioInputStream(progBytes)) {
-                    programHeaders.add(ElfProgramHeader(
+                    programHeaders.add(
+                        ElfProgramHeader(
                             offset = readInt(at = 0x04),
                             vAddr = readInt(at = 0x08),
-                            memSize = readInt(at = 0x14)))
+                            memSize = readInt(at = 0x14)
+                        )
+                    )
                 }
             }
 
@@ -60,11 +64,14 @@ class ElfFile(val bytes: ByteArray) {
             repeat(header.sectionHeaderCount) {
                 val sectBytes = readBytes(header.sectionHeaderSize)
                 with(KioInputStream(sectBytes)) {
-                    sectionHeaders.add(ElfSectionHeader(
+                    sectionHeaders.add(
+                        ElfSectionHeader(
                             type = readInt(at = 0x04),
                             vAddr = readInt(at = 0x0C),
                             offset = readInt(at = 0x10),
-                            size = readInt(at = 0x14)))
+                            size = readInt(at = 0x14)
+                        )
+                    )
                 }
             }
         }
@@ -74,9 +81,11 @@ class ElfFile(val bytes: ByteArray) {
     }
 }
 
-class ElfHeader(val entryPoint: Int,
-                val programHeaderOffset: Int, val programHeaderSize: Int, val programHeaderCount: Int,
-                val sectionHeaderOffset: Int, val sectionHeaderSize: Int, val sectionHeaderCount: Int) {
+class ElfHeader(
+    val entryPoint: Int,
+    val programHeaderOffset: Int, val programHeaderSize: Int, val programHeaderCount: Int,
+    val sectionHeaderOffset: Int, val sectionHeaderSize: Int, val sectionHeaderCount: Int
+) {
     override fun toString(): String {
         return "ElfHeader(entryPoint=${entryPoint.toWHex()}, programHeaderOffset=${programHeaderOffset.toWHex()}, programHeaderSize=${programHeaderSize.toWHex()}, " +
                 "programHeaderCount=${programHeaderCount.toWHex()}, sectionHeaderOffset=${sectionHeaderOffset.toWHex()}, sectionHeaderSize=${sectionHeaderSize.toWHex()}, " +

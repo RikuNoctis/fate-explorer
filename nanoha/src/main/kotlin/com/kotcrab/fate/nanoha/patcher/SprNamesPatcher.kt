@@ -21,7 +21,12 @@ import kio.util.seek
 import java.io.File
 
 /** @author Kotcrab */
-class SprNamesPatcher(private val sprFile: File, private val boundsDef: File, private val newWidth: Int, private val newHeight: Int) {
+class SprNamesPatcher(
+    private val sprFile: File,
+    private val boundsDef: File,
+    private val newWidth: Int,
+    private val newHeight: Int
+) {
     fun patchTo(outFile: File) {
         sprFile.copyTo(outFile, overwrite = true)
         with(LERandomAccessFile(outFile)) {

@@ -183,7 +183,7 @@ class EbootPatches {
             patch("TitleTranslation") {
                 change(0x00141E9C) {
                     val titleBytes = "Magical Girl Lyrical Nanoha A's PORTABLE ―THE GEARS OF DESTINY―"
-                            .toByteArray(Charsets.UTF_8)
+                        .toByteArray(Charsets.UTF_8)
                     titleBytes.toList().chunked(4, transform = {
                         val b1 = it.getOrElse(0, { 0x0 }).toUnsignedInt() shl 24
                         val b2 = it.getOrElse(1, { 0x0 }).toUnsignedInt() shl 16

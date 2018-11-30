@@ -25,8 +25,10 @@ import java.io.File
 import java.nio.charset.Charset
 
 /** @author Kotcrab */
-class ExtraInfoMatrixBinTFilePatcher(origBytes: ByteArray, outFile: File, translation: ExtraTranslation, translationOffset: Int,
-                                     charset: Charset = Charsets.WINDOWS_932) {
+class ExtraInfoMatrixBinTFilePatcher(
+    origBytes: ByteArray, outFile: File, translation: ExtraTranslation, translationOffset: Int,
+    charset: Charset = Charsets.WINDOWS_932
+) {
     init {
         val out = KioOutputStream(outFile)
         var entryCount = 0
@@ -35,8 +37,10 @@ class ExtraInfoMatrixBinTFilePatcher(origBytes: ByteArray, outFile: File, transl
             repeat(9) {
                 entryCount++
                 entryCount++
-                val len = out.writeDatString(translation.getTranslation(entryCount, translationOffset),
-                        charset = charset)
+                val len = out.writeDatString(
+                    translation.getTranslation(entryCount, translationOffset),
+                    charset = charset
+                )
                 if (len > 0x1400) error("Too long translation text")
                 out.writeNullBytes(0x1400 - len)
                 entryCount++
@@ -44,8 +48,10 @@ class ExtraInfoMatrixBinTFilePatcher(origBytes: ByteArray, outFile: File, transl
             entryCount = 0
             repeat(9) {
                 entryCount++
-                val len = out.writeDatString(translation.getTranslation(entryCount, translationOffset),
-                        charset = charset)
+                val len = out.writeDatString(
+                    translation.getTranslation(entryCount, translationOffset),
+                    charset = charset
+                )
                 if (len > 0x44) error("Too long translation text")
                 out.writeNullBytes(0x44 - len)
                 entryCount++

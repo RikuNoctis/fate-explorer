@@ -30,8 +30,10 @@ fun StringBuilder.appendWindowsLine(text: String = "") {
     appendLine(text, "\r\n")
 }
 
-fun KioInputStream.readDatString(at: Int = pos(), maintainStreamPos: Boolean = false, fixUpNewLine: Boolean = false,
-                                 charset: Charset = Charsets.WINDOWS_932): String {
+fun KioInputStream.readDatString(
+    at: Int = pos(), maintainStreamPos: Boolean = false, fixUpNewLine: Boolean = false,
+    charset: Charset = Charsets.WINDOWS_932
+): String {
     val prevPos = longPos()
     setPos(at)
     var charCount = 0

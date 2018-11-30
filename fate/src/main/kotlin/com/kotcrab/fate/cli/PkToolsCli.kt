@@ -26,9 +26,11 @@ import com.kotcrab.fate.file.extella.PkFile
 import java.io.File
 
 /** @author Kotcrab */
-@Cli(name = "pktools", description = "Allows to manipulate PK archives",
-        defaultCommand = Help::class,
-        commands = [(Extract::class), (ExtractAll::class), (ExtractDnD::class)])
+@Cli(
+    name = "pktools", description = "Allows to manipulate PK archives",
+    defaultCommand = Help::class,
+    commands = [(Extract::class), (ExtractAll::class), (ExtractDnD::class)]
+)
 object PkToolsCli {
     @JvmStatic
     fun main(args: Array<String>) {
@@ -41,7 +43,10 @@ class Extract : PkToolsCommand() {
     @Required
     @Arguments(description = "PK archive path")
     private val pkPath = ""
-    @Option(name = ["--output", "-o"], description = "Output directory, must exist and be empty. If not specified default will be used")
+    @Option(
+        name = ["--output", "-o"],
+        description = "Output directory, must exist and be empty. If not specified default will be used"
+    )
     private val outputPath = ""
 
     override fun run() {
@@ -60,7 +65,10 @@ class ExtractDnD : PkToolsCommand() {
     }
 }
 
-@Command(name = "extractAll", description = "Extract all .pk files from specified directory. Default output directory is used.")
+@Command(
+    name = "extractAll",
+    description = "Extract all .pk files from specified directory. Default output directory is used."
+)
 class ExtractAll : PkToolsCommand() {
     @Required
     @Arguments(description = "Source folder containing .pk files")

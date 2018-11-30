@@ -86,7 +86,9 @@ class Tm2NamesPatcher(private val srcTm2: File, private val srcPng: File) {
 
         val blocksPerLine = width / blockWidth
         val blockVerticalLines = height / blockHeight
-        val blocks = Array(blocksPerLine * blockVerticalLines / 2, { SequentialArrayReader(reader.read(blockWidth * blockHeight)) })
+        val blocks = Array(
+            blocksPerLine * blockVerticalLines / 2,
+            { SequentialArrayReader(reader.read(blockWidth * blockHeight)) })
 
         val output = SequentialArrayWriter(ByteArray(width * height / 2))
         //this will probably only work for texture 256 pixels wide but the general approach didn't work so whatever

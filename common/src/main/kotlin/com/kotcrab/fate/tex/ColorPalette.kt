@@ -82,8 +82,9 @@ class ColorPalette(val paletteBytes: ByteArray, private val mode: Mode) {
             if (directAlpha != -1) return directAlpha
             println("WARN: No direct alpha found for color with full alpha")
         }
-
-        return colors.mapIndexed { index, palColor -> index to colorDistance(color, palColor) }.minBy { it.second }!!.first
+        return colors
+            .mapIndexed { index, palColor -> index to colorDistance(color, palColor) }
+            .minBy { it.second }!!.first
     }
 
     private fun colorDistance(argbColor1: Int, argbColor2: Int): Double {
@@ -102,7 +103,9 @@ class ColorPalette(val paletteBytes: ByteArray, private val mode: Mode) {
         val c2b = (argbColor2 and 0xFF) / 255.0
 
         val alphaDiff = c2a - c1a
-        return channelDistance(c1r, c2r, alphaDiff) + channelDistance(c1g, c2g, alphaDiff) + channelDistance(c1b, c2b, alphaDiff)
+        return channelDistance(c1r, c2r, alphaDiff) +
+                channelDistance(c1g, c2g, alphaDiff) +
+                channelDistance(c1b, c2b, alphaDiff)
     }
 
     fun writeToFile(file: File) {

@@ -48,8 +48,12 @@ class HieroFile(fntFile: File, pngFile: File) {
                     base = partAsInt(2)
                 }
                 "char" -> {
-                    chars.add(Char(partAsInt(1), partAsInt(2), partAsInt(3), partAsInt(4),
-                            partAsInt(5), partAsInt(6), partAsInt(7), partAsInt(8)))
+                    chars.add(
+                        Char(
+                            partAsInt(1), partAsInt(2), partAsInt(3), partAsInt(4),
+                            partAsInt(5), partAsInt(6), partAsInt(7), partAsInt(8)
+                        )
+                    )
                 }
                 "kerning" -> {
                     kernings.add(Kerning(partAsInt(1), partAsInt(2), partAsInt(3)))
@@ -68,6 +72,16 @@ class HieroFile(fntFile: File, pngFile: File) {
         this.glyphs = glyphs.toMap()
     }
 
-    class Char(val id: Int, val x: Int, val y: Int, val width: Int, val height: Int, val xoffset: Int, val yoffset: Int, val xadvance: Int)
+    class Char(
+        val id: Int,
+        val x: Int,
+        val y: Int,
+        val width: Int,
+        val height: Int,
+        val xoffset: Int,
+        val yoffset: Int,
+        val xadvance: Int
+    )
+
     class Kerning(val first: Int, val second: Int, val amount: Int)
 }

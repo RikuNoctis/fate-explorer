@@ -187,7 +187,8 @@ class TranslateScreen : View(APP_TITLE) {
             label {
                 addClass(paddedLabel)
                 bind(textEntry.globalIndex, readonly = true,
-                        converter = ReadOnlyStringConverter({ "Entry ${it + 1} of ${controller.getEntryCount()}" }))
+                    converter = ReadOnlyStringConverter({ "Entry ${it + 1} of ${controller.getEntryCount()}" })
+                )
             }
             region {
                 hgrow = Priority.ALWAYS
