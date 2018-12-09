@@ -39,13 +39,12 @@ class EbootPatcher(
     outFile: File,
     patchList: List<EbootPatch>,
     baseProgramHeaderIdx: Int,
-    relocationSectionHeaderIdx: Int
+    relocationSectionHeaderIdx: Int = -1
 ) {
     init {
         val elf = ElfFile(inFile)
         val baseProgramHeader = elf.programHeaders[baseProgramHeaderIdx]
         val nextProgramHeader = elf.programHeaders.getOrNull(baseProgramHeaderIdx + 1)
-        val relocationSectionHeader = elf.sectionHeaders[relocationSectionHeaderIdx]
 
         val outBytes = inFile.readBytes()
         patchList.forEach { patch ->
@@ -57,21 +56,27 @@ class EbootPatcher(
                 val patchBytes = DatatypeConverter.parseHexBinary(change.hexString)
                 arrayCopy(src = patchBytes, dest = outBytes, destPos = change.startAddr + baseProgramHeader.offset)
             }
-            patch.relocationsToRemove.forEach relRemoveLoop@{ addrToRemove ->
-                with(KioInputStream(outBytes)) {
-                    setPos(relocationSectionHeader.offset)
-                    while (pos() < relocationSectionHeader.offset + relocationSectionHeader.size) {
-                        val addr = readInt()
-                        val typePos = pos()
-                        val type = readInt()
-                        if (addr == addrToRemove) {
-                            arrayCopy(src = ByteArray(4), dest = outBytes, destPos = typePos)
-                            close()
-                            return@relRemoveLoop
+            if (relocationSectionHeaderIdx == -1 && patch.relocationsToRemove.isNotEmpty()) {
+                error("To remove relocations you must specify index of relocation section header")
+            }
+            if (relocationSectionHeaderIdx != -1) {
+                val relocationSectionHeader = elf.sectionHeaders[relocationSectionHeaderIdx]
+                patch.relocationsToRemove.forEach relRemoveLoop@{ addrToRemove ->
+                    with(KioInputStream(outBytes)) {
+                        setPos(relocationSectionHeader.offset)
+                        while (pos() < relocationSectionHeader.offset + relocationSectionHeader.size) {
+                            val addr = readInt()
+                            val typePos = pos()
+                            val type = readInt()
+                            if (addr == addrToRemove) {
+                                arrayCopy(src = ByteArray(4), dest = outBytes, destPos = typePos)
+                                close()
+                                return@relRemoveLoop
+                            }
                         }
                     }
+                    error("Can't remove relocation: ${addrToRemove.toWHex()}, entry not found.")
                 }
-                error("Can't remove relocation: ${addrToRemove.toWHex()}, entry not found.")
             }
         }
         outFile.writeBytes(outBytes)
